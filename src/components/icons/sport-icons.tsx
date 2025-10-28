@@ -1,4 +1,4 @@
-import { Futbol, Swords, Bike, Run, Flame } from 'lucide-react';
+import { Swords, Bike, TrendingUp, Flame } from 'lucide-react';
 
 interface SportIconProps extends React.SVGProps<SVGSVGElement> {
   sport: string;
@@ -59,6 +59,33 @@ const TennisIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
   );
 
+const SoccerBallIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2L8.5 6.5" />
+    <path d="M12 2L15.5 6.5" />
+    <path d="M12 22L8.5 17.5" />
+    <path d="M12 22L15.5 17.5" />
+    <path d="M2 12L6.5 8.5" />
+    <path d="M2 12L6.5 15.5" />
+    <path d="M22 12L17.5 8.5" />
+    <path d="M22 12L17.5 15.5" />
+    <path d="M8.5 6.5L6.5 8.5" />
+    <path d="M15.5 6.5L17.5 8.5" />
+    <path d="M8.5 17.5L6.5 15.5" />
+    <path d="M15.5 17.5L17.5 15.5" />
+  </svg>
+);
+
 
 export function SportIcon({ sport, className, ...props }: SportIconProps) {
   const sportName = sport.toLowerCase();
@@ -68,7 +95,7 @@ export function SportIcon({ sport, className, ...props }: SportIconProps) {
     case 'basketball':
       return <BasketballIcon {...iconProps} />;
     case 'soccer':
-      return <Futbol {...iconProps} />;
+      return <SoccerBallIcon {...iconProps} />;
     case 'volleyball':
       return <VolleyballIcon {...iconProps} />;
     case 'tennis':
@@ -79,7 +106,7 @@ export function SportIcon({ sport, className, ...props }: SportIconProps) {
     case 'bike':
         return <Bike {...iconProps} />;
     case 'running':
-      return <Run {...iconProps} />;
+      return <TrendingUp {...iconProps} />;
     default:
       return <Flame {...iconProps} />;
   }
