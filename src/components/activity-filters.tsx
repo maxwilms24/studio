@@ -13,7 +13,7 @@ interface ActivityFiltersProps {
   onFilterChange: (filters: { sport: string; location: string }) => void;
 }
 
-const sports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing'];
+const sports = ['Basketbal', 'Voetbal', 'Volleybal', 'Tennis', 'Hardlopen', 'Schermen', 'Padel', 'Hockey', 'Wielrennen'];
 
 export function ActivityFilters({ onFilterChange }: ActivityFiltersProps) {
     

@@ -19,7 +19,7 @@ import { Camera, User as UserIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
-const allSports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing', 'Cycling'];
+const allSports = ['Basketbal', 'Voetbal', 'Volleybal', 'Tennis', 'Hardlopen', 'Schermen', 'Padel', 'Hockey', 'Wielrennen'];
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();

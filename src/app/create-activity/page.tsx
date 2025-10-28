@@ -21,7 +21,7 @@ import { collection, doc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import type { UserProfile } from '@/lib/types';
 import { useEffect } from 'react';
 
-const sports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing'];
+const sports = ['Basketbal', 'Voetbal', 'Volleybal', 'Tennis', 'Hardlopen', 'Schermen', 'Padel', 'Hockey', 'Wielrennen'];
 
 const formSchema = z.object({
   sport: z.string().min(1, 'Selecteer een sport.'),
