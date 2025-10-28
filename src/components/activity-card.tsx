@@ -57,6 +57,19 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 
   const progress = (playersJoined / activity.totalPlayers) * 100;
 
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Open':
+        return 'secondary';
+      case 'Full':
+        return 'default';
+      case 'Cancelled':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  }
+
   return (
     <Link href={`/activity/${activity.id}`} className="block group">
         <Card className="flex flex-col h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:border-primary/50 group-hover:-translate-y-1">
@@ -71,15 +84,15 @@ export function ActivityCard({ activity }: ActivityCardProps) {
                 </CardDescription>
                 </div>
             </div>
-            <Badge variant={activity.status === 'Open' ? 'secondary' : 'destructive'} className="capitalize border border-border">
-                {activity.status === 'Open' ? 'Open' : 'Gesloten'}
+            <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize border border-border">
+                {activity.status}
             </Badge>
             </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-4">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
-                <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' h:mm a" />
+                <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' HH:mm" />
             </div>
             <div>
             <div className="flex justify-between items-center mb-1">

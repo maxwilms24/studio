@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { GroupChat } from '@/components/group-chat';
 import { SportIcon } from '@/components/icons/sport-icons';
@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, Users, Plus, Minus, User as UserIcon } from 'lucide-react';
 import { notFound, useRouter } from 'next/navigation';
 import { ClientTime } from '@/components/client-time';
-import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import type { Activity, ActivityResponse, Participant, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -66,6 +66,15 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
 
   const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile);
 
+  const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
+
+  useEffect(() => {
+    if (activity && activity.status === 'Open' && playersJoined >= activity.totalPlayers) {
+      updateDocumentNonBlocking(activityRef, { status: 'Full' });
+    }
+  }, [activity, playersJoined, activityRef]);
+
+
   if (isLoading) {
     return <AppLayout><p>Laden...</p></AppLayout>;
   }
@@ -75,11 +84,24 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
   }
 
   const isOrganizer = user?.uid === activity.organizerId;
-  const playersJoined = participants.reduce((acc, p) => acc + p.participantCount, 0);
   const progress = (playersJoined / activity.totalPlayers) * 100;
   
   const isParticipant = user ? activity.participantIds.includes(user.uid) : false;
   const hasPendingResponse = pendingResponses.some(p => p.respondentId === user?.uid);
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Open':
+        return 'secondary';
+      case 'Full':
+        return 'default';
+      case 'Cancelled':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  }
+
 
   return (
     <AppLayout>
@@ -97,8 +119,8 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                     </CardDescription>
                   </div>
                 </div>
-                <Badge variant={activity.status === 'Open' ? 'secondary' : 'destructive'} className="capitalize text-base px-4 py-2 border-border">
-                  {activity.status === 'Open' ? 'Open' : 'Gesloten'}
+                <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize text-base px-4 py-2 border-border">
+                  {activity.status}
                 </Badge>
               </div>
             </CardHeader>
@@ -110,7 +132,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-5 w-5 text-primary" />
-                        <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' h:mm a" />
+                        <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' HH:mm" />
                     </div>
                 </div>
                 <div>
@@ -127,7 +149,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
           </Card>
           
           {isOrganizer && activity.status === 'Open' && <ManageParticipants activity={activity} pendingResponses={pendingResponses} />}
-          {activity.status === 'Closed' && isParticipant && user && currentUserProfile && <GroupChat activity={activity} currentUser={user} currentUserProfile={currentUserProfile} />}
+          {(activity.status === 'Full' || activity.status === 'Closed') && isParticipant && user && currentUserProfile && <GroupChat activity={activity} currentUser={user} currentUserProfile={currentUserProfile} />}
           {!isOrganizer && !isParticipant && activity.status === 'Open' && !hasPendingResponse && user && currentUserProfile && <RespondToActivity activity={activity} user={user} userProfile={currentUserProfile} />}
           {!isOrganizer && hasPendingResponse && (
             <Card className="text-center">

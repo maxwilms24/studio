@@ -16,7 +16,7 @@ export type UserProfile = {
     favoriteSports: string[];
 }
 
-export type ActivityStatus = 'Open' | 'Closed' | 'Cancelled';
+export type ActivityStatus = 'Open' | 'Full' | 'Closed' | 'Cancelled';
 
 export type Activity = {
   id: string;

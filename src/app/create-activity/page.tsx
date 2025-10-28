@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
 import { CalendarIcon, PlusCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -167,17 +168,18 @@ export default function CreateActivityPage() {
                                 !field.value && 'text-muted-foreground'
                               )}
                             >
-                              {field.value ? format(field.value, 'PPP') : <span>Kies een datum</span>}
+                              {field.value ? format(field.value, 'PPP', { locale: nl }) : <span>Kies een datum</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
+                            locale={nl}
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
-                            disabled={(date) => date < new Date() || date > new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+                            disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) }
                             initialFocus
                           />
                         </PopoverContent>

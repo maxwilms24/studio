@@ -15,9 +15,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useToast } from '@/hooks/use-toast';
-import { Camera, User as UserIcon } from 'lucide-react';
+import { Camera, Pencil, User as UserIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 const allSports = ['Basketbal', 'Voetbal', 'Volleybal', 'Tennis', 'Hardlopen', 'Schermen', 'Padel', 'Hockey', 'Wielrennen'];
 
@@ -27,6 +28,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isNameEditing, setIsNameEditing] = useState(false);
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -40,6 +43,12 @@ export default function ProfilePage() {
   }, [firestore, user]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  useEffect(() => {
+    if (userProfile) {
+      setDisplayName(userProfile.name);
+    }
+  }, [userProfile]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -77,6 +86,17 @@ export default function ProfilePage() {
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
+
+  const handleNameSave = () => {
+    if (displayName.trim() && userProfileRef) {
+        updateDocumentNonBlocking(userProfileRef, { name: displayName });
+        toast({
+            title: 'Succes!',
+            description: 'Je naam is bijgewerkt.',
+        });
+        setIsNameEditing(false);
+    }
+  }
 
   const isLoading = isUserLoading || isProfileLoading;
   
@@ -122,7 +142,7 @@ export default function ProfilePage() {
   return (
     <AppLayout>
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="relative group">
             <Avatar className="h-24 w-24 border-4 border-primary cursor-pointer" onClick={handleAvatarClick}>
               <AvatarImage src={userProfile.profilePhotoUrl} alt={userProfile.name} data-ai-hint={userProfile.profilePhotoHint} />
@@ -144,8 +164,25 @@ export default function ProfilePage() {
               accept="image/png, image/jpeg"
             />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">{userProfile.name}</h1>
+          <div className="flex-1">
+            {isNameEditing ? (
+                 <div className="flex items-center gap-2">
+                    <Input 
+                        value={displayName} 
+                        onChange={(e) => setDisplayName(e.target.value)} 
+                        className="text-3xl font-bold tracking-tight font-headline h-auto p-0 border-0"
+                    />
+                    <Button size="sm" onClick={handleNameSave}>Opslaan</Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setIsNameEditing(false); setDisplayName(userProfile.name); }}>Annuleren</Button>
+                 </div>
+            ) : (
+                <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold tracking-tight font-headline">{userProfile.name}</h1>
+                    <Button variant="ghost" size="icon" onClick={() => setIsNameEditing(true)}>
+                        <Pencil className="h-5 w-5" />
+                    </Button>
+                </div>
+            )}
             <p className="text-muted-foreground mt-1">Lid sinds {new Date().getFullYear()}</p>
           </div>
         </div>
@@ -165,6 +202,11 @@ function FavoriteSportsManager({ userProfile, userProfileRef }: { userProfile: U
     const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast();
 
+    useEffect(() => {
+        // Ensure local state is updated if the profile prop changes from outside
+        setSelectedSports(userProfile.favoriteSports || []);
+    }, [userProfile.favoriteSports]);
+
     const handleSportSelection = (sport: string) => {
         setSelectedSports(prev => 
             prev.includes(sport) ? prev.filter(s => s !== sport) : [...prev, sport]
@@ -179,6 +221,11 @@ function FavoriteSportsManager({ userProfile, userProfileRef }: { userProfile: U
         });
         setIsEditing(false);
     };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setSelectedSports(userProfile.favoriteSports || []);
+    }
 
     return (
         <Card>
@@ -210,13 +257,13 @@ function FavoriteSportsManager({ userProfile, userProfileRef }: { userProfile: U
                             ))}
                         </div>
                         <div className="flex justify-end gap-2 pt-4">
-                            <Button variant="ghost" onClick={() => { setIsEditing(false); setSelectedSports(userProfile.favoriteSports); }}>Annuleren</Button>
+                            <Button variant="ghost" onClick={handleCancel}>Annuleren</Button>
                             <Button onClick={handleSaveChanges}>Opslaan</Button>
                         </div>
                     </div>
                 ) : (
                     <div className="flex flex-wrap gap-4">
-                        {userProfile.favoriteSports.length > 0 ? (
+                        {userProfile.favoriteSports && userProfile.favoriteSports.length > 0 ? (
                             userProfile.favoriteSports.map(sport => (
                                 <Badge key={sport} variant="secondary" className="text-lg py-2 px-4 border border-border flex items-center gap-2">
                                     <SportIcon sport={sport} className="h-5 w-5" />
