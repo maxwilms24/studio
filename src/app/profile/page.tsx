@@ -8,14 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useDoc, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { DocumentReference, doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useToast } from '@/hooks/use-toast';
 import { Camera, User as UserIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+
+const allSports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing', 'Cycling'];
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -106,7 +110,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (!userProfile) {
+  if (!userProfile || !userProfileRef) {
     return (
         <AppLayout>
             <p>Gebruikersprofiel niet gevonden.</p>
@@ -145,25 +149,86 @@ export default function ProfilePage() {
             <p className="text-muted-foreground mt-1">Lid sinds {new Date().getFullYear()}</p>
           </div>
         </div>
+        
         <Separator />
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">Favoriete Sporten</CardTitle>
-                <CardDescription>De sporten die je het liefst beoefent.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-wrap gap-4">
-                    {userProfile.favoriteSports.map(sport => (
-                        <Badge key={sport} variant="secondary" className="text-lg py-2 px-4 border border-border flex items-center gap-2">
-                            <SportIcon sport={sport} className="h-5 w-5" />
-                            <span>{sport}</span>
-                        </Badge>
-                    ))}
-                     {userProfile.favoriteSports.length === 0 && <p className="text-muted-foreground">Nog geen favoriete sporten geselecteerd.</p>}
-                </div>
-            </CardContent>
-        </Card>
+        
+        <FavoriteSportsManager userProfile={userProfile} userProfileRef={userProfileRef} />
+        
       </div>
     </AppLayout>
   );
+}
+
+
+function FavoriteSportsManager({ userProfile, userProfileRef }: { userProfile: UserProfile, userProfileRef: DocumentReference }) {
+    const [selectedSports, setSelectedSports] = useState<string[]>(userProfile.favoriteSports || []);
+    const [isEditing, setIsEditing] = useState(false);
+    const { toast } = useToast();
+
+    const handleSportSelection = (sport: string) => {
+        setSelectedSports(prev => 
+            prev.includes(sport) ? prev.filter(s => s !== sport) : [...prev, sport]
+        );
+    };
+
+    const handleSaveChanges = () => {
+        updateDocumentNonBlocking(userProfileRef, { favoriteSports: selectedSports });
+        toast({
+            title: 'Opgeslagen!',
+            description: 'Je favoriete sporten zijn bijgewerkt.'
+        });
+        setIsEditing(false);
+    };
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline">Favoriete Sporten</CardTitle>
+                    <CardDescription>Selecteer de sporten die je het liefst beoefent.</CardDescription>
+                </div>
+                {!isEditing && (
+                    <Button variant="outline" onClick={() => setIsEditing(true)}>Wijzig</Button>
+                )}
+            </CardHeader>
+            <CardContent>
+                {isEditing ? (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {allSports.map(sport => (
+                                <div key={sport} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={sport}
+                                        checked={selectedSports.includes(sport)}
+                                        onCheckedChange={() => handleSportSelection(sport)}
+                                    />
+                                    <Label htmlFor={sport} className="flex items-center gap-2 cursor-pointer">
+                                        <SportIcon sport={sport} className="h-5 w-5" />
+                                        <span>{sport}</span>
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-end gap-2 pt-4">
+                            <Button variant="ghost" onClick={() => { setIsEditing(false); setSelectedSports(userProfile.favoriteSports); }}>Annuleren</Button>
+                            <Button onClick={handleSaveChanges}>Opslaan</Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap gap-4">
+                        {userProfile.favoriteSports.length > 0 ? (
+                            userProfile.favoriteSports.map(sport => (
+                                <Badge key={sport} variant="secondary" className="text-lg py-2 px-4 border border-border flex items-center gap-2">
+                                    <SportIcon sport={sport} className="h-5 w-5" />
+                                    <span>{sport}</span>
+                                </Badge>
+                            ))
+                        ) : (
+                            <p className="text-muted-foreground">Nog geen favoriete sporten geselecteerd. Klik op 'Wijzig' om ze toe te voegen.</p>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
 }
