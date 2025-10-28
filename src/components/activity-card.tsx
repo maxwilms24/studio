@@ -89,8 +89,8 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   }
 
   return (
-    <Link href={`/activity/${activity.id}`} className="block group">
-        <Card className="flex flex-col h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:border-primary/50 group-hover:-translate-y-1">
+    <Card className="flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
+      <Link href={`/activity/${activity.id}`} className="flex-grow flex flex-col">
         <CardHeader>
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -123,27 +123,29 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
             </div>
         </CardContent>
-        <CardFooter className="flex justify-between items-center">
-            <div className="flex items-center -space-x-2">
-                {participants?.map((p) => (
-                    <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
-                        <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
-                        <AvatarFallback>
-                            {p.profilePhotoUrl ? p.name.charAt(0) : <UserIcon className="h-4 w-4" />}
-                        </AvatarFallback>
-                    </Avatar>
-                ))}
-                {(activity.participantIds?.length || 0) > 4 && (
-                    <Avatar className="h-8 w-8 border-2 border-background">
-                        <AvatarFallback>+{(activity.participantIds.length) - 4}</AvatarFallback>
-                    </Avatar>
-                )}
-            </div>
-            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                Bekijk Details <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-        </CardFooter>
-        </Card>
-    </Link>
+      </Link>
+      <CardFooter className="flex justify-between items-center">
+          <div className="flex items-center -space-x-2">
+              {participants?.map((p) => (
+                  <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
+                      <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
+                      <AvatarFallback>
+                          {p.profilePhotoUrl ? p.name.charAt(0) : <UserIcon className="h-4 w-4" />}
+                      </AvatarFallback>
+                  </Avatar>
+              ))}
+              {(activity.participantIds?.length || 0) > 4 && (
+                  <Avatar className="h-8 w-8 border-2 border-background">
+                      <AvatarFallback>+{(activity.participantIds.length) - 4}</AvatarFallback>
+                  </Avatar>
+              )}
+          </div>
+          <Button asChild variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Link href={`/activity/${activity.id}`}>
+                  Bekijk Details <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+          </Button>
+      </CardFooter>
+    </Card>
   );
 }
