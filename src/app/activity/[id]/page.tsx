@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Clock, MapPin, Users, Plus, Minus } from 'lucide-react';
+import { Clock, MapPin, Users, Plus, Minus, User as UserIcon } from 'lucide-react';
 import { notFound, useRouter } from 'next/navigation';
 import { ClientTime } from '@/components/client-time';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
@@ -152,7 +152,9 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
                                 <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
-                                <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>
+                                    {p.profilePhotoUrl ? p.name.charAt(0) : <UserIcon className="h-5 w-5" />}
+                                </AvatarFallback>
                             </Avatar>
                             <div>
                                 <p className="font-semibold">{p.name}</p>

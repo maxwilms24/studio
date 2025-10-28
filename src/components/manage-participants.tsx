@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, X, User as UserIcon } from 'lucide-react';
 import type { Activity, ActivityResponse } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
@@ -58,7 +58,9 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
                 <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                         <AvatarImage src={response.respondentPhotoUrl} alt={response.respondentName} data-ai-hint={response.respondentPhotoHint} />
-                        <AvatarFallback>{response.respondentName.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>
+                            {response.respondentPhotoUrl ? response.respondentName.charAt(0) : <UserIcon className="h-5 w-5" />}
+                        </AvatarFallback>
                     </Avatar>
                     <div>
                         <p className="font-semibold">{response.respondentName}</p>

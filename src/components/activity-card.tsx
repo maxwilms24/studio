@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, Users, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Users, ArrowRight, User as UserIcon } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import { SportIcon } from './icons/sport-icons';
 import { Progress } from './ui/progress';
@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ClientTime } from './client-time';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
-import type { ActivityResponse } from '@/lib/types';
+import type { ActivityResponse, UserProfile } from '@/lib/types';
 import React from 'react';
 
 interface ActivityCardProps {
@@ -40,7 +40,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
     );
   }, [firestore, activity.participantIds]);
 
-  const { data: participants } = useCollection(participantsQuery);
+  const { data: participants } = useCollection<UserProfile>(participantsQuery);
 
   const playersJoined = React.useMemo(() => {
     let count = 0;
@@ -79,7 +79,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         <CardContent className="flex-grow space-y-4">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
-                <ClientTime date={activity.time.toDate()} formatString="EEEE, MMMM d 'om' h:mm a" />
+                <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' h:mm a" />
             </div>
             <div>
             <div className="flex justify-between items-center mb-1">
@@ -94,10 +94,12 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         </CardContent>
         <CardFooter className="flex justify-between items-center">
             <div className="flex items-center -space-x-2">
-                {participants?.map((p: any) => (
+                {participants?.map((p) => (
                     <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
                         <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
-                        <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>
+                            {p.profilePhotoUrl ? p.name.charAt(0) : <UserIcon className="h-4 w-4" />}
+                        </AvatarFallback>
                     </Avatar>
                 ))}
                 {(activity.participantIds?.length || 0) > 4 && (

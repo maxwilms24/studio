@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
+import { Send, User as UserIcon } from 'lucide-react';
 import type { Activity, ChatMessage, UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -72,7 +72,9 @@ export function GroupChat({ activity, currentUser, currentUserProfile }: GroupCh
                         {!isCurrentUser && (
                              <Avatar className="h-8 w-8">
                                 <AvatarImage src={msg.senderPhotoUrl} alt={msg.senderName} data-ai-hint={msg.senderPhotoHint} />
-                                <AvatarFallback>{msg.senderName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>
+                                    {msg.senderPhotoUrl ? msg.senderName.charAt(0) : <UserIcon className="h-4 w-4" />}
+                                </AvatarFallback>
                             </Avatar>
                         )}
                         <div className={cn("max-w-xs md:max-w-md p-3 rounded-lg", isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted")}>
@@ -86,7 +88,9 @@ export function GroupChat({ activity, currentUser, currentUserProfile }: GroupCh
                         {isCurrentUser && (
                              <Avatar className="h-8 w-8">
                                 <AvatarImage src={currentUserProfile.profilePhotoUrl} alt={currentUserProfile.name} data-ai-hint={currentUserProfile.profilePhotoHint} />
-                                <AvatarFallback>{currentUserProfile.name.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>
+                                     {currentUserProfile.profilePhotoUrl ? currentUserProfile.name.charAt(0) : <UserIcon className="h-4 w-4" />}
+                                </AvatarFallback>
                             </Avatar>
                         )}
                     </div>

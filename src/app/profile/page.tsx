@@ -12,10 +12,10 @@ import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useToast } from '@/hooks/use-toast';
-import { Camera } from 'lucide-react';
+import { Camera, User as UserIcon } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !user || !userProfileRef) return;
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -52,7 +52,7 @@ export default function ProfilePage() {
         await uploadString(storageRef, dataUrl, 'data_url');
         const downloadUrl = await getDownloadURL(storageRef);
         
-        updateDocumentNonBlocking(userProfileRef!, { profilePhotoUrl: downloadUrl });
+        updateDocumentNonBlocking(userProfileRef, { profilePhotoUrl: downloadUrl });
 
         toast({
           title: 'Succes!',
@@ -122,7 +122,9 @@ export default function ProfilePage() {
           <div className="relative group">
             <Avatar className="h-24 w-24 border-4 border-primary cursor-pointer" onClick={handleAvatarClick}>
               <AvatarImage src={userProfile.profilePhotoUrl} alt={userProfile.name} data-ai-hint={userProfile.profilePhotoHint} />
-              <AvatarFallback className="text-3xl">{userProfile.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="text-3xl">
+                {userProfile.profilePhotoUrl ? userProfile.name.charAt(0) : <UserIcon className="h-10 w-10" />}
+              </AvatarFallback>
             </Avatar>
             <div 
               className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"

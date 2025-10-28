@@ -62,7 +62,9 @@ export function Header() {
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10 border-2 border-primary">
                   <AvatarImage src={userProfile.profilePhotoUrl} alt={userProfile.name} data-ai-hint={userProfile.profilePhotoHint} />
-                  <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>
+                    {userProfile.profilePhotoUrl ? userProfile.name.charAt(0) : <UserIcon className="h-5 w-5" />}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
