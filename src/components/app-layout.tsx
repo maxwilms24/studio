@@ -17,7 +17,7 @@ import {
 import { Header } from '@/components/header';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, User } from 'lucide-react';
+import { Home, PlusCircle, User, List } from 'lucide-react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -42,6 +42,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Link href="/">
                     <Home />
                     <span>Ontdek</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/my-activities'}
+                  tooltip={{ children: 'Mijn Activiteiten' }}
+                >
+                  <Link href="/my-activities">
+                    <List />
+                    <span>Mijn Activiteiten</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
