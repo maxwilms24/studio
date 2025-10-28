@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { useUser } from '@/firebase';
+import { FirebaseError } from 'firebase/app';
 
 const formSchema = z.object({
   email: z.string().email('Ongeldig emailadres.'),
@@ -55,12 +56,28 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    initiateEmailSignIn(auth, data.email, data.password);
-    toast({
-      title: 'Inloggen...',
-      description: 'Je wordt doorgestuurd.',
-    });
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    try {
+      await initiateEmailSignIn(auth, data.email, data.password);
+      toast({
+        title: 'Inloggen...',
+        description: 'Je wordt doorgestuurd.',
+      });
+    } catch (error) {
+        if (error instanceof FirebaseError && error.code === 'auth/invalid-credential') {
+             toast({
+                variant: 'destructive',
+                title: 'Inloggen mislukt',
+                description: 'De ingevoerde e-mail of wachtwoord is onjuist. Probeer het opnieuw.',
+             });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Inloggen mislukt',
+                description: 'Er is een onbekende fout opgetreden.',
+            });
+        }
+    }
   };
 
   return (
