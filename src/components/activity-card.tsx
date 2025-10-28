@@ -89,14 +89,18 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   }
 
   return (
-    <Card className="flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
-      <Link href={`/activity/${activity.id}`} className="flex-grow flex flex-col">
+    <Card className="relative flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
         <CardHeader>
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <SportIcon sport={activity.sport} className="h-8 w-8 text-primary" />
                 <div>
-                <CardTitle className="text-xl font-headline">{activity.sport}</CardTitle>
+                <CardTitle className="text-xl font-headline">
+                    <Link href={`/activity/${activity.id}`} className="stretched-link">
+                        <span className="absolute inset-0" />
+                        {activity.sport}
+                    </Link>
+                </CardTitle>
                 <CardDescription className="flex items-center gap-1.5 pt-1">
                     <MapPin className="h-3.5 w-3.5" /> {activity.location}
                 </CardDescription>
@@ -123,8 +127,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
             </div>
         </CardContent>
-      </Link>
-      <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex justify-between items-center z-10">
           <div className="flex items-center -space-x-2">
               {participants?.map((p) => (
                   <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
@@ -149,3 +152,4 @@ export function ActivityCard({ activity }: ActivityCardProps) {
     </Card>
   );
 }
+
