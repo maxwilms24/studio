@@ -3,29 +3,47 @@
 import * as React from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Sparkles, Loader2 } from 'lucide-react';
-import { suggestRelevantActivities } from '@/ai/flows/suggest-relevant-activities';
-import type { UserProfile } from '@/lib/types';
+import { Sparkles, Loader2, ArrowRight } from 'lucide-react';
+import { suggestRelevantActivities, SuggestRelevantActivitiesOutput } from '@/ai/flows/suggest-relevant-activities';
+import type { UserProfile, Activity } from '@/lib/types';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import { SportIcon } from './icons/sport-icons';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 
 interface AiSuggestionsProps {
     currentUser: UserProfile;
 }
 
 export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
-    const [suggestions, setSuggestions] = React.useState<string[]>([]);
+    const firestore = useFirestore();
+    const [suggestions, setSuggestions] = React.useState<SuggestRelevantActivitiesOutput>([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
 
+    const openActivitiesQuery = useMemoFirebase(() => 
+        query(collection(firestore, 'activities'), where('status', '==', 'Open'))
+    , [firestore]);
+    const { data: openActivities } = useCollection<Activity>(openActivitiesQuery);
+
     const getSuggestions = async () => {
+        if (!openActivities || openActivities.length === 0) {
+            toast({
+                variant: 'default',
+                title: 'Geen openstaande activiteiten',
+                description: 'Er zijn momenteel geen activiteiten om voor te stellen.',
+            });
+            return;
+        }
+
         setIsLoading(true);
         setSuggestions([]);
         try {
             const result = await suggestRelevantActivities({
-                location: "Amsterdam", // Mock location
                 preferredSports: currentUser.favoriteSports,
+                activities: openActivities,
             });
             setSuggestions(result);
         } catch (error) {
@@ -40,14 +58,16 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
         }
     }
 
+    const hasFavorites = currentUser.favoriteSports && currentUser.favoriteSports.length > 0;
+
     return (
         <div>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-accent" />
+                    <Sparkles className="h-6 w-6 text-primary" />
                     <h2 className="text-2xl font-bold tracking-tight font-headline">Voor Jou</h2>
                 </div>
-                <Button onClick={getSuggestions} disabled={isLoading}>
+                <Button onClick={getSuggestions} disabled={isLoading || !hasFavorites} title={!hasFavorites ? 'Selecteer eerst je favoriete sporten op je profielpagina' : 'Stel Activiteiten Voor'}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Stel Activiteiten Voor
                 </Button>
@@ -68,21 +88,30 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
                         ))}
                     </div>
                 )}
-                {!isLoading && suggestions.length > 0 && (
-                     <Carousel opts={{ align: "start", loop: true }} className="w-full">
+                {!isLoading && suggestions.length > 0 && openActivities && (
+                     <Carousel opts={{ align: "start", loop: suggestions.length > 2 }} className="w-full">
                         <CarouselContent>
-                            {suggestions.map((suggestion, index) => {
-                                const sport = suggestion.split(" ")[0] || "Activity";
+                            {suggestions.map((suggestion) => {
+                                const activity = openActivities.find(a => a.id === suggestion.activityId);
+                                if (!activity) return null;
+
                                 return (
-                                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                                    <div className="p-1">
-                                    <Card className="bg-accent/20 border-accent">
+                                <CarouselItem key={suggestion.activityId} className="md:basis-1/2 lg:basis-1/3">
+                                    <div className="p-1 h-full">
+                                    <Card className="bg-accent/20 border-accent flex flex-col h-full group">
                                         <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
-                                            <SportIcon sport={sport} className="w-8 h-8 text-accent-foreground" />
-                                            <CardTitle className="text-lg font-headline">{sport}</CardTitle>
+                                            <SportIcon sport={activity.sport} className="w-8 h-8 text-accent-foreground" />
+                                            <CardTitle className="text-lg font-headline">{activity.sport}</CardTitle>
                                         </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <p className="text-sm text-accent-foreground/80">{suggestion.reason}</p>
+                                        </CardContent>
                                         <CardContent>
-                                            <p className="text-sm text-accent-foreground/80">{suggestion}</p>
+                                            <Button asChild variant="link" className="p-0 h-auto text-accent-foreground">
+                                                <Link href={`/activity/${activity.id}`}>
+                                                    Bekijk activiteit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                                </Link>
+                                            </Button>
                                         </CardContent>
                                     </Card>
                                     </div>
@@ -96,8 +125,20 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
                 )}
                  {!isLoading && suggestions.length === 0 && (
                     <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg border-2 border-dashed">
-                        <p className="text-lg font-semibold text-muted-foreground">Momenteel geen suggesties</p>
-                        <p className="text-sm text-muted-foreground mt-1">Klik op de knop om gepersonaliseerde suggesties van onze AI te krijgen!</p>
+                        {!hasFavorites ? (
+                            <>
+                                <p className="text-lg font-semibold text-muted-foreground">Voeg je favoriete sporten toe!</p>
+                                <p className="text-sm text-muted-foreground mt-1">Ga naar je profiel om je favoriete sporten te selecteren voor persoonlijke aanbevelingen.</p>
+                                <Button asChild variant="secondary" className="mt-4">
+                                    <Link href="/profile">Naar Profiel</Link>
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-lg font-semibold text-muted-foreground">Klik voor suggesties</p>
+                                <p className="text-sm text-muted-foreground mt-1">Onze AI staat klaar om je te helpen de perfecte sportactiviteit te vinden!</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
