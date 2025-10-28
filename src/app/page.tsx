@@ -5,22 +5,34 @@ import { AppLayout } from '@/components/app-layout';
 import { ActivityFilters } from '@/components/activity-filters';
 import { ActivityCard } from '@/components/activity-card';
 import { AiSuggestions } from '@/components/ai-suggestions';
-import { mockActivities, mockUsers } from '@/lib/data';
-import type { Activity } from '@/lib/types';
+import type { Activity, UserProfile } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, query, where } from 'firebase/firestore';
 
 export default function HomePage() {
-  const [activities, setActivities] = React.useState<Activity[]>(mockActivities);
+  const firestore = useFirestore();
+  const { user } = useUser();
+  
+  const activitiesRef = useMemoFirebase(() => collection(firestore, 'activities'), [firestore]);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesRef);
+
+  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+  const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userProfileRef);
+
   const [filters, setFilters] = React.useState({ sport: '', location: '' });
 
-  const filteredActivities = activities.filter((activity) => {
-    return (
-      (filters.sport === '' || activity.sport.toLowerCase() === filters.sport.toLowerCase()) &&
-      (filters.location === '' || activity.location.toLowerCase().includes(filters.location.toLowerCase()))
-    );
-  });
+  const filteredActivities = React.useMemo(() => {
+    if (!activities) return [];
+    return activities.filter((activity) => {
+      return (
+        (filters.sport === '' || activity.sport.toLowerCase() === filters.sport.toLowerCase()) &&
+        (filters.location === '' || activity.location.toLowerCase().includes(filters.location.toLowerCase()))
+      );
+    });
+  }, [activities, filters]);
   
-  const currentUser = mockUsers[0]; // Mock current user
+  const isLoading = isLoadingActivities || (user && isLoadingProfile);
 
   return (
     <AppLayout>
@@ -34,18 +46,19 @@ export default function HomePage() {
 
         <Separator />
 
-        <AiSuggestions currentUser={currentUser} />
+        {userProfile && <AiSuggestions currentUser={userProfile} />}
 
         <div>
           <h2 className="text-2xl font-bold tracking-tight font-headline">Available Now</h2>
-          {filteredActivities.length > 0 ? (
+          {isLoading && <p>Loading activities...</p>}
+          {!isLoading && filteredActivities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
               {filteredActivities.map((activity) => (
                 <ActivityCard key={activity.id} activity={activity} />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg mt-4 border-2 border-dashed">
+            !isLoading && <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg mt-4 border-2 border-dashed">
                 <p className="text-lg font-semibold text-muted-foreground">No activities found</p>
                 <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or check back later!</p>
             </div>

@@ -15,13 +15,46 @@ import { SportIcon } from './icons/sport-icons';
 import { Progress } from './ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ClientTime } from './client-time';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
+import type { ActivityResponse } from '@/lib/types';
+import React from 'react';
 
 interface ActivityCardProps {
   activity: Activity;
 }
 
 export function ActivityCard({ activity }: ActivityCardProps) {
-  const playersJoined = activity.participants.reduce((acc, p) => acc + p.participantCount, 0);
+  const firestore = useFirestore();
+  
+  const responsesRef = useMemoFirebase(() => collection(firestore, 'activities', activity.id, 'responses'), [firestore, activity.id]);
+  const acceptedResponsesQuery = useMemoFirebase(() => query(responsesRef, where('status', '==', 'accepted')), [responsesRef]);
+  
+  const { data: acceptedResponses } = useCollection<ActivityResponse>(acceptedResponsesQuery);
+  
+  const participantsQuery = useMemoFirebase(() => {
+    if (!activity.participantIds || activity.participantIds.length === 0) return null;
+    return query(
+      collection(firestore, 'users'),
+      where('id', 'in', activity.participantIds.slice(0, 4))
+    );
+  }, [firestore, activity.participantIds]);
+
+  const { data: participants } = useCollection(participantsQuery);
+
+  const playersJoined = React.useMemo(() => {
+    let count = 0;
+    if (acceptedResponses) {
+        count = acceptedResponses.reduce((acc, p) => acc + p.numberOfParticipants, 0);
+    }
+    // ensure organizer is counted if not in responses
+    if (!acceptedResponses?.some(r => r.respondentId === activity.organizerId)) {
+        count +=1;
+    }
+    return count;
+  }, [acceptedResponses, activity.organizerId]);
+
+
   const progress = (playersJoined / activity.totalPlayers) * 100;
 
   return (
@@ -46,7 +79,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         <CardContent className="flex-grow space-y-4">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
-                <ClientTime date={activity.time} formatString="EEEE, MMMM d 'at' h:mm a" />
+                <ClientTime date={activity.time.toDate()} formatString="EEEE, MMMM d 'at' h:mm a" />
             </div>
             <div>
             <div className="flex justify-between items-center mb-1">
@@ -61,15 +94,15 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         </CardContent>
         <CardFooter className="flex justify-between items-center">
             <div className="flex items-center -space-x-2">
-                {activity.participants.slice(0,4).map((p) => (
-                    <Avatar key={p.user.id} className="h-8 w-8 border-2 border-background">
-                        <AvatarImage src={p.user.profilePhoto.imageUrl} alt={p.user.name} data-ai-hint={p.user.profilePhoto.imageHint} />
-                        <AvatarFallback>{p.user.name.charAt(0)}</AvatarFallback>
+                {participants?.map((p: any) => (
+                    <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
+                        <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
+                        <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                 ))}
-                {activity.participants.length > 4 && (
+                {(activity.participantIds?.length || 0) > 4 && (
                     <Avatar className="h-8 w-8 border-2 border-background">
-                        <AvatarFallback>+{activity.participants.length - 4}</AvatarFallback>
+                        <AvatarFallback>+{(activity.participantIds.length) - 4}</AvatarFallback>
                     </Avatar>
                 )}
             </div>

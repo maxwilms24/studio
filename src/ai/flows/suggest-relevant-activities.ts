@@ -21,6 +21,9 @@ const SuggestRelevantActivitiesOutputSchema = z.array(z.string()).describe('Sugg
 export type SuggestRelevantActivitiesOutput = z.infer<typeof SuggestRelevantActivitiesOutputSchema>;
 
 export async function suggestRelevantActivities(input: SuggestRelevantActivitiesInput): Promise<SuggestRelevantActivitiesOutput> {
+  // Can't generate suggestions if there are no preferred sports
+  if(input.preferredSports.length === 0) return [];
+  
   return suggestRelevantActivitiesFlow(input);
 }
 

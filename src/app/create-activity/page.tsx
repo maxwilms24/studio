@@ -16,6 +16,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation';
+import { useAuth, useFirestore, useUser, addDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import { useEffect } from 'react';
 
 const sports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing'];
 
@@ -25,29 +29,66 @@ const formSchema = z.object({
   date: z.date({ required_error: 'A date is required.' }),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time format (HH:MM).'),
   totalPlayers: z.coerce.number().min(2, 'Must have at least 2 players.').max(50),
-  playersSought: z.coerce.number().min(1, 'Must seek at least 1 player.'),
-}).refine(data => data.playersSought < data.totalPlayers, {
+  playersNeeded: z.coerce.number().min(1, 'Must seek at least 1 player.'),
+}).refine(data => data.playersNeeded < data.totalPlayers, {
     message: "Players sought must be less than total players.",
-    path: ["playersSought"],
+    path: ["playersNeeded"],
 });
 
 export default function CreateActivityPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      sport: '',
-      location: '',
-      time: '18:00',
-      totalPlayers: 10,
-      playersSought: 5,
-    },
-  });
+    useEffect(() => {
+        if (!isUserLoading && !user) {
+            router.push('/login');
+        }
+    }, [user, isUserLoading, router]);
+
+    const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+    const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+        sport: '',
+        location: '',
+        time: '18:00',
+        totalPlayers: 10,
+        playersNeeded: 5,
+        },
+    });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('Form Submitted:', values);
+    if (!user || !userProfile) {
+        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to create an activity.' });
+        return;
+    }
+    
+    const [hours, minutes] = values.time.split(':').map(Number);
+    const activityDateTime = new Date(values.date);
+    activityDateTime.setHours(hours, minutes);
+
+    const newActivity = {
+        organizerId: user.uid,
+        organizerName: userProfile.name,
+        organizerPhotoUrl: userProfile.profilePhotoUrl,
+        organizerPhotoHint: userProfile.profilePhotoHint,
+        sport: values.sport,
+        location: values.location,
+        time: Timestamp.fromDate(activityDateTime),
+        totalPlayers: values.totalPlayers,
+        playersNeeded: values.playersNeeded,
+        status: 'Open',
+        participantIds: [user.uid],
+        createdAt: serverTimestamp(),
+    };
+
+    const activitiesCollection = collection(firestore, 'activities');
+    addDocumentNonBlocking(activitiesCollection, newActivity);
+
     toast({
         title: "Activity Created!",
         description: `Your ${values.sport} game is on the list.`,
@@ -174,7 +215,7 @@ export default function CreateActivityPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="playersSought"
+                    name="playersNeeded"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Number of Players You're Seeking</FormLabel>

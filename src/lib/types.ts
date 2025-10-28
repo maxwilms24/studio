@@ -1,4 +1,5 @@
 import type { ImagePlaceholder } from './placeholder-images';
+import { Timestamp } from 'firebase/firestore';
 
 export type User = {
   id: string;
@@ -7,30 +8,57 @@ export type User = {
   favoriteSports: string[];
 };
 
+export type UserProfile = {
+    id: string;
+    name: string;
+    profilePhotoUrl: string;
+    profilePhotoHint: string;
+    favoriteSports: string[];
+}
+
 export type ActivityStatus = 'Open' | 'Closed' | 'Cancelled';
 
 export type Activity = {
   id: string;
-  organizer: User;
+  organizerId: string;
+  organizerName: string;
+  organizerPhotoUrl: string;
+  organizerPhotoHint: string;
   sport: string;
   location: string;
-  time: Date;
-  totalPlayers: number; // Total slots for the activity
-  playersSought: number; // How many players the organizer is looking for
+  time: Timestamp;
+  totalPlayers: number;
+  playersNeeded: number; 
   status: ActivityStatus;
-  participants: ActivityResponse[];
-  pendingResponses: ActivityResponse[];
+  participantIds: string[];
 };
 
 export type ActivityResponse = {
   id: string;
-  user: User;
-  participantCount: number; // How many people this user is bringing (1 for just themself)
+  activityId: string;
+  respondentId: string;
+  respondentName: string;
+  respondentPhotoUrl: string;
+  respondentPhotoHint: string;
+  numberOfParticipants: number;
+  status: 'pending' | 'accepted' | 'rejected';
 };
+
+export type Participant = {
+    id: string;
+    name: string;
+    profilePhotoUrl: string;
+    profilePhotoHint: string;
+    participantCount: number;
+    isOrganizer: boolean;
+}
 
 export type ChatMessage = {
   id:string;
-  user: User;
+  senderId: string;
+  senderName: string;
+  senderPhotoUrl: string;
+  senderPhotoHint: string;
   message: string;
-  timestamp: Date;
+  timestamp: Timestamp;
 };
