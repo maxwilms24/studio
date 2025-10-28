@@ -22,14 +22,15 @@ import { useToast } from '@/hooks/use-toast';
 
 
 export default function ActivityDetailPage({ params }: { params: { id: string } }) {
+  const { id: activityId } = params;
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
-  const activityRef = useMemoFirebase(() => doc(firestore, 'activities', params.id), [firestore, params.id]);
+  const activityRef = useMemoFirebase(() => doc(firestore, 'activities', activityId), [firestore, activityId]);
   const { data: activity, isLoading: isLoadingActivity } = useDoc<Activity>(activityRef);
 
-  const responsesRef = useMemoFirebase(() => collection(firestore, 'activities', params.id, 'responses'), [firestore, params.id]);
+  const responsesRef = useMemoFirebase(() => collection(firestore, 'activities', activityId, 'responses'), [firestore, activityId]);
   const { data: responses, isLoading: isLoadingResponses } = useCollection<ActivityResponse>(responsesRef);
 
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
