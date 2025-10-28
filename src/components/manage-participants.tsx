@@ -29,8 +29,8 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
         }
 
         toast({
-            title: `Request ${decision}`,
-            description: `${response.respondentName}'s request to join has been ${decision}.`
+            title: `Verzoek ${decision === 'accepted' ? 'geaccepteerd' : 'afgewezen'}`,
+            description: `Het verzoek van ${response.respondentName} om deel te nemen is ${decision === 'accepted' ? 'geaccepteerd' : 'afgewezen'}.`
         })
     }
   
@@ -38,8 +38,8 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Manage Requests</CardTitle>
-          <CardDescription>There are no pending requests to join your activity.</CardDescription>
+          <CardTitle className="font-headline">Beheer Verzoeken</CardTitle>
+          <CardDescription>Er zijn geen openstaande verzoeken om deel te nemen aan je activiteit.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -48,8 +48,8 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Manage Requests</CardTitle>
-        <CardDescription>Accept or reject requests to join your activity.</CardDescription>
+        <CardTitle className="font-headline">Beheer Verzoeken</CardTitle>
+        <CardDescription>Accepteer of wijs verzoeken om deel te nemen aan je activiteit af.</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
@@ -63,7 +63,7 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
                     <div>
                         <p className="font-semibold">{response.respondentName}</p>
                         <p className="text-sm text-muted-foreground">
-                            Wants to bring {response.numberOfParticipants} participant{response.numberOfParticipants > 1 ? 's' : ''}
+                            Wil {response.numberOfParticipants} deelnemer{response.numberOfParticipants > 1 ? 's' : ''} meenemen
                         </p>
                     </div>
                 </div>

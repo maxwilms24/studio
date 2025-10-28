@@ -72,24 +72,24 @@ export function ActivityCard({ activity }: ActivityCardProps) {
                 </div>
             </div>
             <Badge variant={activity.status === 'Open' ? 'secondary' : 'destructive'} className="capitalize border border-border">
-                {activity.status}
+                {activity.status === 'Open' ? 'Open' : 'Gesloten'}
             </Badge>
             </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-4">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
-                <ClientTime date={activity.time.toDate()} formatString="EEEE, MMMM d 'at' h:mm a" />
+                <ClientTime date={activity.time.toDate()} formatString="EEEE, MMMM d 'om' h:mm a" />
             </div>
             <div>
             <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium flex items-center gap-1.5">
                 <Users className="h-4 w-4" />
-                Players
+                Spelers
                 </span>
                 <span className="text-sm font-bold">{playersJoined} / {activity.totalPlayers}</span>
             </div>
-            <Progress value={progress} aria-label={`${playersJoined} of ${activity.totalPlayers} players joined`} />
+            <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
             </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center">
@@ -107,7 +107,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
                 )}
             </div>
             <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                View Details <ArrowRight className="ml-2 h-4 w-4" />
+                Bekijk Details <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
         </CardFooter>
         </Card>

@@ -79,20 +79,20 @@ export function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <span>Profiel</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>Uitloggen</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
          {!isLoading && !user && (
             <Button asChild>
-                <Link href="/login">Log In</Link>
+                <Link href="/login">Inloggen</Link>
             </Button>
          )}
       </div>

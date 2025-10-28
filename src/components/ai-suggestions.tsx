@@ -5,13 +5,13 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { suggestRelevantActivities } from '@/ai/flows/suggest-relevant-activities';
-import type { User } from '@/lib/types';
+import type { UserProfile } from '@/lib/types';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import { SportIcon } from './icons/sport-icons';
 import { useToast } from '@/hooks/use-toast';
 
 interface AiSuggestionsProps {
-    currentUser: User;
+    currentUser: UserProfile;
 }
 
 export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
@@ -24,16 +24,16 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
         setSuggestions([]);
         try {
             const result = await suggestRelevantActivities({
-                location: "New York City", // Mock location
+                location: "Amsterdam", // Mock location
                 preferredSports: currentUser.favoriteSports,
             });
             setSuggestions(result);
         } catch (error) {
-            console.error("AI suggestion failed:", error);
+            console.error("AI suggestie mislukt:", error);
             toast({
                 variant: 'destructive',
-                title: 'AI Suggestion Failed',
-                description: 'Could not fetch sport suggestions at this time.',
+                title: 'AI Suggestie Mislukt',
+                description: 'Kon op dit moment geen sportsuggesties ophalen.',
             });
         } finally {
             setIsLoading(false);
@@ -45,11 +45,11 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Sparkles className="h-6 w-6 text-accent" />
-                    <h2 className="text-2xl font-bold tracking-tight font-headline">For You</h2>
+                    <h2 className="text-2xl font-bold tracking-tight font-headline">Voor Jou</h2>
                 </div>
                 <Button onClick={getSuggestions} disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Suggest Activities
+                    Stel Activiteiten Voor
                 </Button>
             </div>
             <div className="mt-4">
@@ -96,8 +96,8 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
                 )}
                  {!isLoading && suggestions.length === 0 && (
                     <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg border-2 border-dashed">
-                        <p className="text-lg font-semibold text-muted-foreground">No suggestions right now</p>
-                        <p className="text-sm text-muted-foreground mt-1">Click the button to get personalized suggestions from our AI!</p>
+                        <p className="text-lg font-semibold text-muted-foreground">Momenteel geen suggesties</p>
+                        <p className="text-sm text-muted-foreground mt-1">Klik op de knop om gepersonaliseerde suggesties van onze AI te krijgen!</p>
                     </div>
                 )}
             </div>

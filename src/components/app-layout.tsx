@@ -37,11 +37,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === '/'}
-                  tooltip={{ children: 'Discover' }}
+                  tooltip={{ children: 'Ontdek' }}
                 >
                   <Link href="/">
                     <Home />
-                    <span>Discover</span>
+                    <span>Ontdek</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -49,11 +49,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === '/create-activity'}
-                  tooltip={{ children: 'Create Activity' }}
+                  tooltip={{ children: 'Activiteit Aanmaken' }}
                 >
                   <Link href="/create-activity">
                     <PlusCircle />
-                    <span>Create Activity</span>
+                    <span>Activiteit Aanmaken</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -61,11 +61,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === '/profile'}
-                  tooltip={{ children: 'Profile' }}
+                  tooltip={{ children: 'Profiel' }}
                 >
                   <Link href="/profile">
                     <User />
-                    <span>Profile</span>
+                    <span>Profiel</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

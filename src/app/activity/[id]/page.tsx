@@ -67,7 +67,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
   const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile);
 
   if (isLoading) {
-    return <AppLayout><p>Loading...</p></AppLayout>;
+    return <AppLayout><p>Laden...</p></AppLayout>;
   }
 
   if (!activity) {
@@ -93,12 +93,12 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                   <div>
                     <CardTitle className="text-3xl font-headline">{activity.sport}</CardTitle>
                     <CardDescription className="flex items-center gap-1.5 pt-1">
-                        Organized by {activity.organizerName}
+                        Georganiseerd door {activity.organizerName}
                     </CardDescription>
                   </div>
                 </div>
                 <Badge variant={activity.status === 'Open' ? 'secondary' : 'destructive'} className="capitalize text-base px-4 py-2 border-border">
-                  {activity.status}
+                  {activity.status === 'Open' ? 'Open' : 'Gesloten'}
                 </Badge>
               </div>
             </CardHeader>
@@ -110,18 +110,18 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-5 w-5 text-primary" />
-                        <ClientTime date={activity.time.toDate()} formatString="EEEE, MMMM d 'at' h:mm a" />
+                        <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' h:mm a" />
                     </div>
                 </div>
                 <div>
                     <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-medium flex items-center gap-1.5">
                         <Users className="h-4 w-4" />
-                        Players
+                        Spelers
                         </span>
                         <span className="text-sm font-bold">{playersJoined} / {activity.totalPlayers}</span>
                     </div>
-                    <Progress value={progress} aria-label={`${playersJoined} of ${activity.totalPlayers} players joined`} />
+                    <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
                 </div>
             </CardContent>
           </Card>
@@ -132,8 +132,8 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
           {!isOrganizer && hasPendingResponse && (
             <Card className="text-center">
                 <CardHeader>
-                    <CardTitle className="font-headline">Response Submitted</CardTitle>
-                    <CardDescription>Your request to join is pending approval from the organizer.</CardDescription>
+                    <CardTitle className="font-headline">Verzoek ingediend</CardTitle>
+                    <CardDescription>Je verzoek om deel te nemen is in afwachting van goedkeuring door de organisator.</CardDescription>
                 </CardHeader>
             </Card>
           )}
@@ -143,7 +143,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
         <div className="md:col-span-1 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Participants ({playersJoined})</CardTitle>
+              <CardTitle className="font-headline">Deelnemers ({playersJoined})</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
@@ -156,7 +156,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                             </Avatar>
                             <div>
                                 <p className="font-semibold">{p.name}</p>
-                                {p.isOrganizer && <Badge variant="outline">Organizer</Badge>}
+                                {p.isOrganizer && <Badge variant="outline">Organisator</Badge>}
                             </div>
                         </div>
                         {p.participantCount > 1 && <Badge variant="secondary">+{p.participantCount - 1}</Badge>}
@@ -188,24 +188,24 @@ function RespondToActivity({ activity, user, userProfile }: { activity: Activity
         };
         const responsesCollection = collection(firestore, 'activities', activity.id, 'responses');
         addDocumentNonBlocking(responsesCollection, response);
-        toast({ title: 'Request Sent', description: 'Your request to join has been sent to the organizer.' });
+        toast({ title: 'Verzoek verzonden', description: 'Je verzoek om deel te nemen is naar de organisator gestuurd.' });
     };
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Join this Activity</CardTitle>
-                <CardDescription>Are you coming alone or with friends?</CardDescription>
+                <CardTitle className="font-headline">Deelnemen aan deze activiteit</CardTitle>
+                <CardDescription>Kom je alleen of met vrienden?</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
                  <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" onClick={() => setParticipantCount(p => Math.max(1, p - 1))}><Minus className="h-4 w-4" /></Button>
                     <div className="text-xl font-bold w-24 text-center">
-                        {participantCount === 1 ? 'Just me' : `Me + ${participantCount - 1}`}
+                        {participantCount === 1 ? 'Alleen ik' : `Ik + ${participantCount - 1}`}
                     </div>
                     <Button variant="outline" size="icon" onClick={() => setParticipantCount(p => Math.min(10, p + 1))}><Plus className="h-4 w-4" /></Button>
                 </div>
-                <Button className="w-full sm:w-auto" onClick={handleSendRequest}>Send Join Request</Button>
+                <Button className="w-full sm:w-auto" onClick={handleSendRequest}>Deelnameverzoek verzenden</Button>
             </CardContent>
         </Card>
     );

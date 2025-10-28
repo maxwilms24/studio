@@ -38,8 +38,8 @@ export default function HomePage() {
     <AppLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">Discover Activities</h1>
-          <p className="text-muted-foreground mt-1">Find your next game and connect with other players.</p>
+          <h1 className="text-3xl font-bold tracking-tight font-headline">Ontdek Activiteiten</h1>
+          <p className="text-muted-foreground mt-1">Vind je volgende wedstrijd en kom in contact met andere spelers.</p>
         </div>
         
         <ActivityFilters onFilterChange={setFilters} />
@@ -49,8 +49,8 @@ export default function HomePage() {
         {userProfile && <AiSuggestions currentUser={userProfile} />}
 
         <div>
-          <h2 className="text-2xl font-bold tracking-tight font-headline">Available Now</h2>
-          {isLoading && <p>Loading activities...</p>}
+          <h2 className="text-2xl font-bold tracking-tight font-headline">Nu Beschikbaar</h2>
+          {isLoading && <p>Activiteiten laden...</p>}
           {!isLoading && filteredActivities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
               {filteredActivities.map((activity) => (
@@ -59,8 +59,8 @@ export default function HomePage() {
             </div>
           ) : (
             !isLoading && <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg mt-4 border-2 border-dashed">
-                <p className="text-lg font-semibold text-muted-foreground">No activities found</p>
-                <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or check back later!</p>
+                <p className="text-lg font-semibold text-muted-foreground">Geen activiteiten gevonden</p>
+                <p className="text-sm text-muted-foreground mt-1">Probeer je filters aan te passen of kom later terug!</p>
             </div>
           )}
         </div>

@@ -24,14 +24,14 @@ import { useEffect } from 'react';
 const sports = ['Basketball', 'Soccer', 'Volleyball', 'Tennis', 'Running', 'Fencing'];
 
 const formSchema = z.object({
-  sport: z.string().min(1, 'Please select a sport.'),
-  location: z.string().min(3, 'Location must be at least 3 characters.'),
-  date: z.date({ required_error: 'A date is required.' }),
-  time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time format (HH:MM).'),
-  totalPlayers: z.coerce.number().min(2, 'Must have at least 2 players.').max(50),
-  playersNeeded: z.coerce.number().min(1, 'Must seek at least 1 player.'),
+  sport: z.string().min(1, 'Selecteer een sport.'),
+  location: z.string().min(3, 'Locatie moet minimaal 3 karakters bevatten.'),
+  date: z.date({ required_error: 'Een datum is verplicht.' }),
+  time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Ongeldig tijdformaat (HH:MM).'),
+  totalPlayers: z.coerce.number().min(2, 'Minimaal 2 spelers.').max(50),
+  playersNeeded: z.coerce.number().min(1, 'Minimaal 1 speler gezocht.'),
 }).refine(data => data.playersNeeded < data.totalPlayers, {
-    message: "Players sought must be less than total players.",
+    message: "Aantal gezochte spelers moet minder zijn dan het totaal aantal spelers.",
     path: ["playersNeeded"],
 });
 
@@ -63,7 +63,7 @@ export default function CreateActivityPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !userProfile) {
-        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to create an activity.' });
+        toast({ variant: 'destructive', title: 'Fout', description: 'Je moet ingelogd zijn om een activiteit aan te maken.' });
         return;
     }
     
@@ -90,8 +90,8 @@ export default function CreateActivityPage() {
     addDocumentNonBlocking(activitiesCollection, newActivity);
 
     toast({
-        title: "Activity Created!",
-        description: `Your ${values.sport} game is on the list.`,
+        title: "Activiteit aangemaakt!",
+        description: `Je ${values.sport} wedstrijd staat op de lijst.`,
       });
     router.push('/');
   }
@@ -101,15 +101,15 @@ export default function CreateActivityPage() {
         <div className="flex items-center gap-4 mb-8">
             <PlusCircle className="h-8 w-8 text-primary" />
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">Create a New Activity</h1>
-                <p className="text-muted-foreground mt-1">Fill out the details to get your game started.</p>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">Nieuwe Activiteit Aanmaken</h1>
+                <p className="text-muted-foreground mt-1">Vul de details in om je spel te starten.</p>
             </div>
         </div>
       <Card>
         <CardHeader>
-          <CardTitle>Activity Details</CardTitle>
+          <CardTitle>Details van de Activiteit</CardTitle>
           <CardDescription>
-            Specify the what, where, when, and who for your sporting event.
+            Specificeer het wat, waar, wanneer en wie voor jouw sportevenement.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -125,7 +125,7 @@ export default function CreateActivityPage() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a sport" />
+                            <SelectValue placeholder="Selecteer een sport" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -143,9 +143,9 @@ export default function CreateActivityPage() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location</FormLabel>
+                      <FormLabel>Locatie</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Central Park Courts" {...field} />
+                        <Input placeholder="bijv. Vondelpark" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -156,7 +156,7 @@ export default function CreateActivityPage() {
                   name="date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Date</FormLabel>
+                      <FormLabel>Datum</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -167,7 +167,7 @@ export default function CreateActivityPage() {
                                 !field.value && 'text-muted-foreground'
                               )}
                             >
-                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                              {field.value ? format(field.value, 'PPP') : <span>Kies een datum</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -191,7 +191,7 @@ export default function CreateActivityPage() {
                     name="time"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Time (24-hour format)</FormLabel>
+                        <FormLabel>Tijd (24-uurs formaat)</FormLabel>
                         <FormControl>
                             <Input type="time" {...field} />
                         </FormControl>
@@ -204,11 +204,11 @@ export default function CreateActivityPage() {
                     name="totalPlayers"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Total Players Needed</FormLabel>
+                        <FormLabel>Totaal Benodigde Spelers</FormLabel>
                         <FormControl>
                             <Input type="number" {...field} />
                         </FormControl>
-                        <FormDescription>The final size of the group.</FormDescription>
+                        <FormDescription>De uiteindelijke grootte van de groep.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -218,18 +218,18 @@ export default function CreateActivityPage() {
                     name="playersNeeded"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Number of Players You're Seeking</FormLabel>
+                        <FormLabel>Aantal Spelers dat je Zoekt</FormLabel>
                         <FormControl>
                             <Input type="number" {...field} />
                         </FormControl>
-                        <FormDescription>How many people you need to join.</FormDescription>
+                        <FormDescription>Hoeveel mensen je nodig hebt om mee te doen.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}
                 />
               </div>
               <div className="flex justify-end">
-                <Button type="submit">Create Activity</Button>
+                <Button type="submit">Activiteit Aanmaken</Button>
               </div>
             </form>
           </Form>

@@ -33,9 +33,9 @@ import { useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Invalid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
+  name: z.string().min(2, 'Naam moet minimaal 2 karakters bevatten.'),
+  email: z.string().email('Ongeldig emailadres.'),
+  password: z.string().min(6, 'Wachtwoord moet minimaal 6 karakters bevatten.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -83,16 +83,16 @@ export default function SignupPage() {
         setDocumentNonBlocking(userDocRef, newUserProfile, { merge: true });
         
         toast({
-          title: 'Account Created!',
-          description: 'You have been successfully signed up.',
+          title: 'Account aangemaakt!',
+          description: 'Je hebt je succesvol geregistreerd.',
         });
         router.push('/');
       }
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Sign-up failed.',
-        description: error.message || 'An unknown error occurred.',
+        title: 'Registratie mislukt.',
+        description: error.message || 'Er is een onbekende fout opgetreden.',
       });
     }
   };
@@ -100,9 +100,9 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+        <CardTitle className="text-2xl font-headline">Maak een account aan</CardTitle>
         <CardDescription>
-          Enter your details below to create your account
+          Voer je gegevens in om een account aan te maken
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -113,7 +113,7 @@ export default function SignupPage() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Naam</FormLabel>
                   <FormControl>
                     <Input placeholder="Alex Johnson" {...field} />
                   </FormControl>
@@ -139,7 +139,7 @@ export default function SignupPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Wachtwoord</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -150,10 +150,10 @@ export default function SignupPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Signing up...' : 'Sign up'}
+              {form.formState.isSubmitting ? 'Bezig met registreren...' : 'Registreer'}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
+              Heb je al een account?{' '}
               <Link href="/login" className="underline text-primary">
                 Log in
               </Link>

@@ -60,8 +60,8 @@ export function GroupChat({ activity, currentUser, currentUserProfile }: GroupCh
   return (
     <Card className="flex flex-col h-[600px]">
       <CardHeader>
-        <CardTitle className="font-headline">Group Chat</CardTitle>
-        <CardDescription>Coordinate details with the other participants.</CardDescription>
+        <CardTitle className="font-headline">Groepschat</CardTitle>
+        <CardDescription>Coördineer details met de andere deelnemers.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden">
         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto pr-4 space-y-4">
@@ -95,7 +95,7 @@ export function GroupChat({ activity, currentUser, currentUserProfile }: GroupCh
         </div>
         <div className="flex items-center gap-2 pt-4 border-t">
           <Input 
-            placeholder="Type your message..." 
+            placeholder="Typ je bericht..." 
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}

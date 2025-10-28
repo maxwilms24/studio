@@ -29,8 +29,8 @@ import { useEffect } from 'react';
 import { useUser } from '@/firebase';
 
 const formSchema = z.object({
-  email: z.string().email('Invalid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
+  email: z.string().email('Ongeldig emailadres.'),
+  password: z.string().min(6, 'Wachtwoord moet minimaal 6 karakters bevatten.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -58,17 +58,17 @@ export default function LoginPage() {
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     initiateEmailSignIn(auth, data.email, data.password);
     toast({
-      title: 'Logging in...',
-      description: 'You are being redirected.',
+      title: 'Inloggen...',
+      description: 'Je wordt doorgestuurd.',
     });
   };
 
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+        <CardTitle className="text-2xl font-headline">Welkom Terug</CardTitle>
         <CardDescription>
-          Enter your email below to log in to your account
+          Voer je e-mailadres in om in te loggen op je account
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -92,7 +92,7 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Wachtwoord</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -103,12 +103,12 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Logging in...' : 'Log in'}
+              {form.formState.isSubmitting ? 'Bezig met inloggen...' : 'Log in'}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
+              Heb je nog geen account?{' '}
               <Link href="/signup" className="underline text-primary">
-                Sign up
+                Registreer
               </Link>
             </div>
           </CardFooter>
