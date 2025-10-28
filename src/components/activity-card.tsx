@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import {
   Card,
@@ -17,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ClientTime } from './client-time';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
-import type { ActivityResponse, UserProfile } from '@/lib/types';
+import type { ActivityResponse, UserProfile, Participant } from '@/lib/types';
 import React from 'react';
 
 interface ActivityCardProps {
@@ -32,15 +33,32 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   
   const { data: acceptedResponses } = useCollection<ActivityResponse>(acceptedResponsesQuery);
   
-  const participantsQuery = useMemoFirebase(() => {
-    if (!activity.participantIds || activity.participantIds.length === 0) return null;
-    return query(
-      collection(firestore, 'users'),
-      where('id', 'in', activity.participantIds.slice(0, 4))
-    );
-  }, [firestore, activity.participantIds]);
+  const participants = React.useMemo(() => {
+    if (!activity || !acceptedResponses) return [];
+    
+    const participantList: Participant[] = acceptedResponses.slice(0,4).map(r => ({
+      id: r.respondentId,
+      name: r.respondentName,
+      profilePhotoUrl: r.respondentPhotoUrl,
+      profilePhotoHint: r.respondentPhotoHint,
+      participantCount: r.numberOfParticipants,
+      isOrganizer: r.respondentId === activity.organizerId
+    }));
 
-  const { data: participants } = useCollection<UserProfile>(participantsQuery);
+    if (!participantList.some(p => p.id === activity.organizerId)) {
+        participantList.unshift({
+            id: activity.organizerId,
+            name: activity.organizerName,
+            profilePhotoUrl: activity.organizerPhotoUrl,
+            profilePhotoHint: activity.organizerPhotoHint,
+            participantCount: 1,
+            isOrganizer: true,
+        });
+    }
+    
+    return participantList.slice(0,4);
+  }, [activity, acceptedResponses]);
+
 
   const playersJoined = React.useMemo(() => {
     let count = 0;

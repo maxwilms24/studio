@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -38,9 +39,9 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
   const pendingResponses = React.useMemo(() => responses?.filter(r => r.status === 'pending') || [], [responses]);
 
   const participants = React.useMemo(() => {
-    if (!activity || !acceptedResponses) return [];
+    if (!activity) return [];
 
-    const participantList: Participant[] = acceptedResponses.map(r => ({
+    const participantList: Participant[] = (responses?.filter(r => r.status === 'accepted') || []).map(r => ({
       id: r.respondentId,
       name: r.respondentName,
       profilePhotoUrl: r.respondentPhotoUrl,
@@ -61,7 +62,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
     }
     
     return participantList;
-  }, [activity, acceptedResponses]);
+  }, [activity, responses]);
 
 
   const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile);
