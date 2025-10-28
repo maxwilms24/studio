@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, Users, Plus, Minus, User as UserIcon } from 'lucide-react';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ClientTime } from '@/components/client-time';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
@@ -21,8 +21,9 @@ import type { Activity, ActivityResponse, Participant, UserProfile } from '@/lib
 import { useToast } from '@/hooks/use-toast';
 
 
-export default function ActivityDetailPage({ params }: { params: { id: string } }) {
-  const { id: activityId } = params;
+export default function ActivityDetailPage() {
+  const params = useParams();
+  const activityId = params.id as string;
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -236,3 +237,5 @@ function RespondToActivity({ activity, user, userProfile }: { activity: Activity
         </Card>
     );
 }
+
+    
