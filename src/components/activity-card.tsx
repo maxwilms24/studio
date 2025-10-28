@@ -13,8 +13,8 @@ import { Clock, MapPin, Users, ArrowRight } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import { SportIcon } from './icons/sport-icons';
 import { Progress } from './ui/progress';
-import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { ClientTime } from './client-time';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -46,7 +46,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         <CardContent className="flex-grow space-y-4">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
-                <span>{format(activity.time, "EEEE, MMMM d 'at' h:mm a")}</span>
+                <ClientTime date={activity.time} formatString="EEEE, MMMM d 'at' h:mm a" />
             </div>
             <div>
             <div className="flex justify-between items-center mb-1">

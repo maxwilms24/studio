@@ -10,9 +10,9 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { mockActivities, mockUsers } from '@/lib/data';
 import { Clock, MapPin, Users, Plus, Minus } from 'lucide-react';
-import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ClientTime } from '@/components/client-time';
 
 export default function ActivityDetailPage({ params }: { params: { id: string } }) {
   const activity = mockActivities.find((a) => a.id === params.id);
@@ -59,7 +59,7 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-5 w-5 text-primary" />
-                        <span>{format(activity.time, "EEEE, MMMM d 'at' h:mm a")}</span>
+                        <ClientTime date={activity.time} formatString="EEEE, MMMM d 'at' h:mm a" />
                     </div>
                 </div>
                 <div>
