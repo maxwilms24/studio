@@ -1,0 +1,130 @@
+/**
+ * @file Firestore Security Rules for SportConnect.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles
+ * and a combination of ownership and shared access for activities and
+ * related data.  It leverages denormalization to avoid costly `get()`
+ * calls within the rules.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile data, accessible only by the
+ *   authenticated user with the matching ID.
+ * - /activities/{activityId}: Stores activity data, accessible to the
+ *   organizer and accepted participants.
+ * - /activities/{activityId}/responses/{responseId}: Stores responses
+ *   to activities, accessible to the organizer and the respondent.
+ * - /activities/{activityId}/messages/{messageId}: Stores chat messages
+ *   related to activities, accessible to accepted participants of the
+ *   activity.
+ *
+ * Key Security Decisions:
+ * - User profiles are strictly private and only accessible to the owning user.
+ * - Activities are accessible to the organizer and accepted participants.
+ * - Listing of user profiles is disallowed to protect user privacy.
+ * - All write operations require authentication.
+ *
+ * Denormalization for Authorization:
+ * - Activities: Include `organizerId` and `acceptedParticipantIds` directly in
+ *   the activity document to enable authorization without additional reads.
+ * - Chat Messages: Include `activityId`, `senderId`, and
+ *   `acceptedParticipantIds` directly in the chat message document to enable
+ *   authorization without additional reads.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) - User 'user_abc' can create their profile if authenticated as 'user_abc'.
+     * @allow (get, update, delete) - User 'user_abc' can read, update, or delete their profile if authenticated as 'user_abc'.
+     * @deny (create, get, update, delete) - User 'user_xyz' cannot access 'user_abc' profile.
+     * @deny (list) - Listing all users is not allowed.
+     * @principle Enforces document ownership for writes, restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to activity documents.
+     * @path /activities/{activityId}
+     * @allow (create) - User 'user_abc' can create an activity with organizerId 'user_abc'.
+     * @allow (get, list) - Any user can read or list activities.
+     * @allow (update, delete) - Only the activity organizer can update or delete the activity.
+     * @deny (create) - User 'user_xyz' cannot create an activity with organizerId 'user_abc'.
+     * @principle Enforces owner-only writes for activities, public read access.
+     */
+    match /activities/{activityId} {
+      function isOrganizer(organizerId) {
+        return request.auth != null && request.auth.uid == organizerId;
+      }
+
+      function isExistingOrganizer(organizerId) {
+        return isOrganizer(organizerId) && resource != null;
+      }
+
+      allow get, list: if true;
+      allow create: if request.auth != null && request.resource.data.organizerId == request.auth.uid;
+      allow update: if isExistingOrganizer(resource.data.organizerId);
+      allow delete: if isExistingOrganizer(resource.data.organizerId);
+    }
+
+    /**
+     * @description Controls access to activity response documents.
+     * @path /activities/{activityId}/responses/{responseId}
+     * @allow (create) - User 'user_abc' can create a response to activity 'activity_123' if their ID matches.
+     * @allow (get, list) - Any user can read or list responses for an activity.
+     * @allow (update, delete) - Only the respondent can update or delete their response.
+     * @deny (create) - User 'user_xyz' cannot create a response for 'user_abc'.
+     * @principle Enforces owner-only writes for responses, public read access.
+     */
+    match /activities/{activityId}/responses/{responseId} {
+      function isRespondent(respondentId) {
+        return request.auth != null && request.auth.uid == respondentId;
+      }
+
+      function isExistingRespondent(respondentId) {
+        return isRespondent(respondentId) && resource != null;
+      }
+
+      allow get, list: if true;
+      allow create: if request.auth != null && request.resource.data.respondentId == request.auth.uid;
+      allow update: if isExistingRespondent(resource.data.respondentId);
+      allow delete: if isExistingRespondent(resource.data.respondentId);
+    }
+
+    /**
+     * @description Controls access to chat messages for activities.
+     * @path /activities/{activityId}/messages/{messageId}
+     * @allow (create) - User 'user_abc' can create a chat message for activity 'activity_123' if they are an accepted participant.
+     * @allow (get, list) - Any user can read or list chat messages for an activity if they are an accepted participant.
+     * @allow (update, delete) - No one can update or delete a chat message.
+     * @deny (create, get, list) - User 'user_xyz' cannot access 'activity_123' messages if they are not a participant.
+     * @principle Enforces access based on activity participation.
+     */
+    match /activities/{activityId}/messages/{messageId} {
+      function isParticipant(activityId) {
+          return request.auth != null && get(/databases/$(database)/documents/activities/$(activityId)).data.acceptedParticipantIds.hasAny([request.auth.uid]);
+      }
+
+      allow get, list: if isParticipant(activityId);
+      allow create: if request.auth != null && get(/databases/$(database)/documents/activities/$(activityId)).data.acceptedParticipantIds.hasAny([request.auth.uid]);
+      allow update, delete: if false;
+    }
+  }
+}

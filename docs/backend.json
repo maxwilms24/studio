@@ -1,0 +1,243 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile in the SportConnect application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's name."
+        },
+        "profilePhoto": {
+          "type": "string",
+          "description": "URL of the user's profile photo.",
+          "format": "uri"
+        },
+        "favoriteSports": {
+          "type": "array",
+          "description": "List of the user's favorite sports.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Activity": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Activity",
+      "type": "object",
+      "description": "Represents a sport activity request created by an organizer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Activity entity."
+        },
+        "organizerId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Activity). The ID of the user who created the activity."
+        },
+        "sport": {
+          "type": "string",
+          "description": "The sport being played (e.g., basketball, soccer)."
+        },
+        "location": {
+          "type": "string",
+          "description": "The location where the sport activity will take place."
+        },
+        "time": {
+          "type": "string",
+          "description": "The time the sport activity will take place. Example: ISO-8601",
+          "format": "date-time"
+        },
+        "totalPlayers": {
+          "type": "number",
+          "description": "The total number of players required for the activity."
+        },
+        "playersNeeded": {
+          "type": "number",
+          "description": "The number of players still needed for the activity."
+        },
+        "acceptedParticipantIds": {
+          "type": "array",
+          "description": "References to UserProfiles. List of user IDs who have been accepted to participate in the activity.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "organizerId",
+        "sport",
+        "location",
+        "time",
+        "totalPlayers",
+        "playersNeeded"
+      ]
+    },
+    "ActivityResponse": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ActivityResponse",
+      "type": "object",
+      "description": "Represents a user's response to a sport activity request.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ActivityResponse entity."
+        },
+        "activityId": {
+          "type": "string",
+          "description": "Reference to Activity. (Relationship: Activity 1:N ActivityResponse). The ID of the activity being responded to."
+        },
+        "respondentId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ActivityResponse). The ID of the user who is responding to the activity."
+        },
+        "numberOfParticipants": {
+          "type": "number",
+          "description": "The number of participants the user is bringing (including themselves)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the request with default value pending",
+          "format": "string"
+        }
+      },
+      "required": [
+        "id",
+        "activityId",
+        "respondentId",
+        "numberOfParticipants"
+      ]
+    },
+    "ChatMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a single message within a group chat related to an activity.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ChatMessage entity."
+        },
+        "activityId": {
+          "type": "string",
+          "description": "Reference to Activity. (Relationship: Activity 1:N ChatMessage). The ID of the activity this message belongs to."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ChatMessage). The ID of the user who sent the message."
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the chat message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The time the message was sent. Example: ISO-8601",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "activityId",
+        "senderId",
+        "message",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profiles. Path-based ownership ensures only the user can access their profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/activities/{activityId}",
+        "definition": {
+          "entityName": "Activity",
+          "schema": {
+            "$ref": "#/backend/entities/Activity"
+          },
+          "description": "Stores activity requests. Includes denormalized 'organizerId' and 'acceptedParticipantIds' for authorization independence.",
+          "params": [
+            {
+              "name": "activityId",
+              "description": "The unique ID of the activity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/activities/{activityId}/responses/{responseId}",
+        "definition": {
+          "entityName": "ActivityResponse",
+          "schema": {
+            "$ref": "#/backend/entities/ActivityResponse"
+          },
+          "description": "Stores responses to activity requests. Nested under the activity to easily query responses for an activity.",
+          "params": [
+            {
+              "name": "activityId",
+              "description": "The unique ID of the activity."
+            },
+            {
+              "name": "responseId",
+              "description": "The unique ID of the response."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/activities/{activityId}/messages/{messageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ChatMessage"
+          },
+          "description": "Stores chat messages for each activity. Includes denormalized 'activityId', 'senderId' and 'acceptedParticipantIds' for authorization independence.",
+          "params": [
+            {
+              "name": "activityId",
+              "description": "The unique ID of the activity."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique ID of the message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support SportConnect's core features, emphasizing security, scalability, and debuggability by adhering to the principles of Authorization Independence, Structural Segregation, Access Modeling, and Data Clarity.  Authorization Independence is achieved through denormalization, specifically by including relevant authorization data (e.g., organizerId for activities) directly within the documents, avoiding the need for `get()` calls in security rules. This allows for atomic operations and simplifies debugging. Structural Segregation ensures that each collection contains documents with similar security requirements. Access Modeling is standardized using path-based ownership for user-related data (e.g., user profiles and activities organized by a user) and leveraging these patterns for predictable authorization and QAPs.\n\nSpecifically:\n\n*   **User Profiles:** Stored under `/users/{userId}` allowing for path-based ownership. This ensures only the user can read/write their profile.\n*   **Activities:** Stored under `/activities/{activityId}`. The `organizerId` field is denormalized, enabling secure list operations and direct access to activities based on organizer ownership. The `acceptedParticipantIds` are stored in the `Activity` document, allowing to authorize access to the chat messages.\n*   **Activity Responses:** Stored as a subcollection under each activity `/activities/{activityId}/responses/{responseId}` to enable querying responses for a specific activity. The `respondentId` links back to the user who responded.\n*   **Chat Messages:** Stored as a subcollection under each activity `/activities/{activityId}/messages/{messageId}`, ensuring that messages are directly associated with their corresponding activity. The `activityId`, `senderId` and `acceptedParticipantIds` are denormalized in each ChatMessage to authorize reading."
+  }
+}
