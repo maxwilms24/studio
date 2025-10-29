@@ -36,6 +36,7 @@ const formSchema = z.object({
   name: z.string().min(2, 'Naam moet minimaal 2 karakters bevatten.'),
   email: z.string().email('Ongeldig emailadres.'),
   password: z.string().min(6, 'Wachtwoord moet minimaal 6 karakters bevatten.'),
+  location: z.string().min(2, 'Locatie moet minimaal 2 karakters bevatten.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -54,6 +55,7 @@ export default function SignupPage() {
       name: '',
       email: '',
       password: '',
+      location: '',
     },
   });
 
@@ -88,6 +90,7 @@ export default function SignupPage() {
         const newUserProfile = {
           id: userId,
           name: data.name,
+          location: data.location,
           favoriteSports: [],
           profilePhotoUrl: randomUserImage.imageUrl,
           profilePhotoHint: randomUserImage.imageHint,
@@ -156,6 +159,19 @@ export default function SignupPage() {
                   <FormLabel>Wachtwoord</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Locatie</FormLabel>
+                  <FormControl>
+                    <Input placeholder="bijv. Amsterdam" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

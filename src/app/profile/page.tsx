@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Pencil, User as UserIcon } from 'lucide-react';
+import { Camera, MapPin, Pencil, User as UserIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -28,8 +28,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [isNameEditing, setIsNameEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  
+  const [isLocationEditing, setIsLocationEditing] = useState(false);
+  const [displayLocation, setDisplayLocation] = useState('');
+
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -47,6 +52,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (userProfile) {
       setDisplayName(userProfile.name);
+      setDisplayLocation(userProfile.location || '');
     }
   }, [userProfile]);
 
@@ -95,6 +101,17 @@ export default function ProfilePage() {
             description: 'Je naam is bijgewerkt.',
         });
         setIsNameEditing(false);
+    }
+  }
+
+  const handleLocationSave = () => {
+    if (displayLocation.trim() && userProfileRef) {
+        updateDocumentNonBlocking(userProfileRef, { location: displayLocation });
+        toast({
+            title: 'Succes!',
+            description: 'Je locatie is bijgewerkt.',
+        });
+        setIsLocationEditing(false);
     }
   }
 
@@ -164,7 +181,7 @@ export default function ProfilePage() {
               accept="image/png, image/jpeg"
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 space-y-2">
             {isNameEditing ? (
                  <div className="flex items-center gap-2">
                     <Input 
@@ -183,7 +200,31 @@ export default function ProfilePage() {
                     </Button>
                 </div>
             )}
-            <p className="text-muted-foreground mt-1">Lid sinds {new Date().getFullYear()}</p>
+            
+            {isLocationEditing ? (
+                 <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        value={displayLocation} 
+                        onChange={(e) => setDisplayLocation(e.target.value)}
+                        placeholder='Voeg je locatie toe'
+                        className="h-auto p-0 border-0 text-muted-foreground"
+                    />
+                    <Button size="sm" onClick={handleLocationSave}>Opslaan</Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setIsLocationEditing(false); setDisplayLocation(userProfile.location || ''); }}>Annuleren</Button>
+                 </div>
+            ) : (
+                <div className="flex items-center gap-3">
+                    <div className='flex items-center gap-1.5 text-muted-foreground'>
+                        <MapPin className="h-5 w-5" />
+                        <span>{userProfile.location || 'Geen locatie ingesteld'}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => setIsLocationEditing(true)}>
+                        <Pencil className="h-5 w-5" />
+                    </Button>
+                </div>
+            )}
+            <p className="text-muted-foreground text-sm">Lid sinds {new Date().getFullYear()}</p>
           </div>
         </div>
         

@@ -14,6 +14,7 @@ export type UserProfile = {
     profilePhotoUrl: string;
     profilePhotoHint: string;
     favoriteSports: string[];
+    location?: string;
 }
 
 export type ActivityStatus = 'Open' | 'Full' | 'Closed' | 'Cancelled';

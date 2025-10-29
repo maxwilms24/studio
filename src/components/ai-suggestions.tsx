@@ -42,6 +42,7 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
         setSuggestions([]);
         try {
             const result = await suggestRelevantActivities({
+                userLocation: currentUser.location,
                 preferredSports: currentUser.favoriteSports,
                 activities: openActivities,
             });
@@ -58,7 +59,20 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
         }
     }
 
-    const hasFavorites = currentUser.favoriteSports && currentUser.favoriteSports.length > 0;
+    const hasPrerequisites = currentUser.favoriteSports && currentUser.favoriteSports.length > 0 && currentUser.location;
+
+    const getPrerequisiteMessage = () => {
+        if (!currentUser.location && (!currentUser.favoriteSports || currentUser.favoriteSports.length === 0)) {
+            return 'Voeg je locatie en favoriete sporten toe op je profielpagina.';
+        }
+        if (!currentUser.location) {
+            return 'Voeg je locatie toe op je profielpagina voor betere suggesties.';
+        }
+        if (!currentUser.favoriteSports || currentUser.favoriteSports.length === 0) {
+            return 'Selecteer eerst je favoriete sporten op je profielpagina.';
+        }
+        return 'Stel Activiteiten Voor';
+    }
 
     return (
         <div>
@@ -67,7 +81,7 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
                     <Sparkles className="h-6 w-6 text-primary" />
                     <h2 className="text-2xl font-bold tracking-tight font-headline">Voor Jou</h2>
                 </div>
-                <Button onClick={getSuggestions} disabled={isLoading || !hasFavorites} title={!hasFavorites ? 'Selecteer eerst je favoriete sporten op je profielpagina' : 'Stel Activiteiten Voor'}>
+                <Button onClick={getSuggestions} disabled={isLoading || !hasPrerequisites} title={!hasPrerequisites ? getPrerequisiteMessage() : 'Stel Activiteiten Voor'}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Stel Activiteiten Voor
                 </Button>
@@ -125,10 +139,10 @@ export function AiSuggestions({ currentUser }: AiSuggestionsProps) {
                 )}
                  {!isLoading && suggestions.length === 0 && (
                     <div className="flex flex-col items-center justify-center text-center bg-card p-10 rounded-lg border-2 border-dashed">
-                        {!hasFavorites ? (
+                        {!hasPrerequisites ? (
                             <>
-                                <p className="text-lg font-semibold text-muted-foreground">Voeg je favoriete sporten toe!</p>
-                                <p className="text-sm text-muted-foreground mt-1">Ga naar je profiel om je favoriete sporten te selecteren voor persoonlijke aanbevelingen.</p>
+                                <p className="text-lg font-semibold text-muted-foreground">Maak je profiel compleet!</p>
+                                <p className="text-sm text-muted-foreground mt-1">{getPrerequisiteMessage()}</p>
                                 <Button asChild variant="secondary" className="mt-4">
                                     <Link href="/profile">Naar Profiel</Link>
                                 </Button>

@@ -19,6 +19,7 @@ const ActivitySchema = z.object({
 });
 
 const SuggestRelevantActivitiesInputSchema = z.object({
+  userLocation: z.string().optional().describe("The user's current location (e.g., city)."),
   preferredSports: z.array(z.string()).describe('The user preferred sports.'),
   activities: z.array(ActivitySchema).describe('A list of available activities.'),
 });
@@ -45,8 +46,9 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestRelevantActivitiesOutputSchema},
   prompt: `You are a friendly and encouraging sports activity recommender. Your goal is to help users discover activities they'll love.
 
-Based on the user's preferred sports and the list of available activities, you should suggest a few relevant options.
+Based on the user's location, their preferred sports, and the list of available activities, you should suggest a few relevant options.
 
+The user's location is: {{{userLocation}}}
 Here are the user's preferred sports:
 {{#each preferredSports}}
 - {{{this}}}
@@ -57,8 +59,10 @@ Here is a list of currently available activities:
 {{{jsonStringify activities}}}
 \`\`\`
 
-Analyze the list of available activities and select up to 3 that are the best match for the user's preferred sports.
-For each suggestion, provide the 'activityId' and a short, exciting 'reason' (max 1-2 sentences) to convince the user to join. For example, if they like basketball, you could say: "Laat je basketbaltalent zien! Er is nog plek voor een paar spelers in het park."
+Analyze the list of available activities and select up to 3 that are the best match for the user.
+Prioritize activities that are in or near the user's location.
+Also, ensure the activities match one of the user's preferred sports.
+For each suggestion, provide the 'activityId' and a short, exciting 'reason' (max 1-2 sentences) to convince the user to join. For example, if they like basketball and are in Amsterdam, you could say: "Laat je basketbaltalent zien in het Vondelpark! Er is nog plek voor een paar spelers."
 
 Only suggest activities that match one of the user's preferred sports. Do not suggest activities if there are no matches.
 Return an empty array if no relevant activities are found.`,
