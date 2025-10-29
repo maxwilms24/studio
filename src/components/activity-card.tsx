@@ -81,11 +81,17 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         return 'secondary';
       case 'Full':
         return 'default';
+      case 'Closed':
+        return 'default';
       case 'Cancelled':
         return 'destructive';
       default:
         return 'outline';
     }
+  }
+
+  if (!activity.id) {
+    return null;
   }
 
   return (
