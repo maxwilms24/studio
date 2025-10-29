@@ -32,7 +32,7 @@ export default function ActivityDetailPage() {
     if (!activityId) return null;
     return doc(firestore, 'activities', activityId);
   }, [firestore, activityId]);
-  const { data: activity, isLoading: isLoadingActivity, error } = useDoc<Activity>(activityRef);
+  const { data: activity, isLoading: isLoadingActivity } = useDoc<Activity>(activityRef);
 
   const responsesRef = useMemoFirebase(() => {
     if (!activityId) return null;
@@ -76,20 +76,21 @@ export default function ActivityDetailPage() {
 
   const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
 
+  // After all loading is complete, if there's still no activity, then it's a 404.
+  if (!isLoading && !activity) {
+    notFound();
+    return null; 
+  }
+  
   if (isLoading) {
     return <AppLayout><div className="flex justify-center items-center h-64"><p>Laden...</p></div></AppLayout>;
   }
-
-  // After loading, if there's still no activity, then it's a 404.
-  if (!activity) {
-    notFound();
-    return null; // notFound() throws an error, but return null for type safety.
-  }
-
-  const isOrganizer = user?.uid === activity.organizerId;
-  const progress = (playersJoined / activity.totalPlayers) * 100;
   
-  const isParticipant = user ? activity.participantIds.includes(user.uid) : false;
+  // We can safely assume activity is not null here due to the check above
+  const isOrganizer = user?.uid === activity!.organizerId;
+  const progress = (playersJoined / activity!.totalPlayers) * 100;
+  
+  const isParticipant = user ? activity!.participantIds.includes(user.uid) : false;
   const hasPendingResponse = pendingResponses.some(p => p.respondentId === user?.uid);
 
   const getStatusBadgeVariant = (status: string) => {
@@ -116,16 +117,16 @@ export default function ActivityDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <SportIcon sport={activity.sport} className="h-10 w-10 text-primary" />
+                  <SportIcon sport={activity!.sport} className="h-10 w-10 text-primary" />
                   <div>
-                    <CardTitle className="text-3xl font-headline">{activity.sport}</CardTitle>
+                    <CardTitle className="text-3xl font-headline">{activity!.sport}</CardTitle>
                     <CardDescription className="flex items-center gap-1.5 pt-1">
-                        Georganiseerd door {activity.organizerName}
+                        Georganiseerd door {activity!.organizerName}
                     </CardDescription>
                   </div>
                 </div>
-                <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize text-base px-4 py-2 border-border">
-                  {activity.status}
+                <Badge variant={getStatusBadgeVariant(activity!.status)} className="capitalize text-base px-4 py-2 border-border">
+                  {activity!.status}
                 </Badge>
               </div>
             </CardHeader>
@@ -133,11 +134,11 @@ export default function ActivityDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-md">
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="h-5 w-5 text-primary" />
-                        <span>{activity.location}</span>
+                        <span>{activity!.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-5 w-5 text-primary" />
-                        <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' HH:mm" />
+                        <ClientTime date={activity!.time.toDate()} formatString="EEEE, d MMMM 'om' HH:mm" />
                     </div>
                 </div>
                 <div>
@@ -146,16 +147,16 @@ export default function ActivityDetailPage() {
                         <Users className="h-4 w-4" />
                         Spelers
                         </span>
-                        <span className="text-sm font-bold">{playersJoined} / {activity.totalPlayers}</span>
+                        <span className="text-sm font-bold">{playersJoined} / {activity!.totalPlayers}</span>
                     </div>
-                    <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
+                    <Progress value={progress} aria-label={`${playersJoined} van de ${activity!.totalPlayers} spelers zijn lid geworden`} />
                 </div>
             </CardContent>
           </Card>
           
-          {isOrganizer && activity.status === 'Open' && <ManageParticipants activity={activity} pendingResponses={pendingResponses} />}
-          {(activity.status === 'Full' || activity.status === 'Closed' || isParticipant) && user && currentUserProfile && <GroupChat activity={activity} currentUser={user} currentUserProfile={currentUserProfile} />}
-          {!isOrganizer && !isParticipant && activity.status === 'Open' && !hasPendingResponse && user && currentUserProfile && <RespondToActivity activity={activity} user={user} userProfile={currentUserProfile} />}
+          {isOrganizer && activity!.status === 'Open' && <ManageParticipants activity={activity!} pendingResponses={pendingResponses} />}
+          {(activity!.status === 'Full' || activity!.status === 'Closed' || isParticipant) && user && currentUserProfile && <GroupChat activity={activity!} currentUser={user} currentUserProfile={currentUserProfile} />}
+          {!isOrganizer && !isParticipant && activity!.status === 'Open' && !hasPendingResponse && user && currentUserProfile && <RespondToActivity activity={activity!} user={user} userProfile={currentUserProfile} />}
           {!isOrganizer && hasPendingResponse && (
             <Card className="text-center">
                 <CardHeader>

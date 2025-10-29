@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ClientTime } from './client-time';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
-import type { ActivityResponse, UserProfile, Participant } from '@/lib/types';
+import type { ActivityResponse, Participant } from '@/lib/types';
 import React from 'react';
 
 interface ActivityCardProps {
@@ -96,26 +96,26 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 
   return (
     <Card className="relative flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
-        <Link href={`/activity/${activity.id}`} className="absolute inset-0 z-0" aria-label={`Bekijk details voor ${activity.sport} op ${activity.location}`}/>
-        <CardHeader>
+        <Link href={`/activity/${activity.id}`} className="absolute inset-0 z-10" aria-label={`Bekijk details voor ${activity.sport} op ${activity.location}`}/>
+        <CardHeader className="z-0">
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <SportIcon sport={activity.sport} className="h-8 w-8 text-primary" />
                 <div>
                 <CardTitle className="text-xl font-headline">
-                    <span className="relative z-10">{activity.sport}</span>
+                    <span>{activity.sport}</span>
                 </CardTitle>
                 <CardDescription className="flex items-center gap-1.5 pt-1">
                     <MapPin className="h-3.5 w-3.5" /> {activity.location}
                 </CardDescription>
                 </div>
             </div>
-            <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize border border-border relative z-10">
+            <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize border border-border">
                 {activity.status}
             </Badge>
             </div>
         </CardHeader>
-        <CardContent className="flex-grow space-y-4">
+        <CardContent className="flex-grow space-y-4 z-0">
             <div className="flex items-center text-sm text-muted-foreground gap-1.5">
                 <Clock className="h-4 w-4" />
                 <ClientTime date={activity.time.toDate()} formatString="EEEE, d MMMM 'om' HH:mm" />
@@ -131,8 +131,8 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             <Progress value={progress} aria-label={`${playersJoined} van de ${activity.totalPlayers} spelers zijn lid geworden`} />
             </div>
         </CardContent>
-      <CardFooter className="flex justify-between items-center z-10">
-          <div className="flex items-center -space-x-2">
+      <CardFooter className="flex justify-between items-center">
+          <div className="flex items-center -space-x-2 z-0">
               {participants?.map((p) => (
                   <Avatar key={p.id} className="h-8 w-8 border-2 border-background">
                       <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
@@ -147,7 +147,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
                   </Avatar>
               )}
           </div>
-          <Button asChild variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button asChild variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity relative z-20">
               <Link href={`/activity/${activity.id}`}>
                   Bekijk Details <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
