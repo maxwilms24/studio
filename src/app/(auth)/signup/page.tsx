@@ -29,8 +29,7 @@ import { doc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
-import { PlaceHolderImages, type ImagePlaceholder } from '@/lib/placeholder-images';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Naam moet minimaal 2 karakters bevatten.'),
@@ -47,7 +46,6 @@ export default function SignupPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
-  const [randomUserImage, setRandomUserImage] = useState<ImagePlaceholder | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,26 +58,15 @@ export default function SignupPage() {
   });
 
   useEffect(() => {
-    // This ensures Math.random() is only called on the client
-    setRandomUserImage(PlaceHolderImages[Math.floor(Math.random() * PlaceHolderImages.length)]);
-  }, []);
-
-
-  useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/');
     }
   }, [user, isUserLoading, router]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!randomUserImage) {
-        toast({
-            variant: 'destructive',
-            title: 'Fout.',
-            description: 'Kon geen profielfoto selecteren. Probeer het opnieuw.',
-        });
-        return;
-    }
+    const defaultImageUrl = `https://picsum.photos/seed/${data.email}/200/200`;
+    const defaultImageHint = "abstract";
+
     try {
       const userCredential = await initiateEmailSignUp(auth, data.email, data.password);
       
@@ -92,8 +79,8 @@ export default function SignupPage() {
           name: data.name,
           location: data.location,
           favoriteSports: [],
-          profilePhotoUrl: randomUserImage.imageUrl,
-          profilePhotoHint: randomUserImage.imageHint,
+          profilePhotoUrl: defaultImageUrl,
+          profilePhotoHint: defaultImageHint,
           createdAt: serverTimestamp(),
         };
 
