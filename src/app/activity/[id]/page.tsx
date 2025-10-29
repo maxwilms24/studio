@@ -76,21 +76,14 @@ export default function ActivityDetailPage() {
 
   const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
 
-  // Handle not found after loading is complete
-  React.useEffect(() => {
-    if (!isLoading && !activity) {
-      notFound();
-    }
-  }, [isLoading, activity]);
-
-
   if (isLoading) {
-    return <AppLayout><p>Laden...</p></AppLayout>;
+    return <AppLayout><div className="flex justify-center items-center h-64"><p>Laden...</p></div></AppLayout>;
   }
 
+  // After loading, if there's still no activity, then it's a 404.
   if (!activity) {
-    // This will be caught by the useEffect above, but as a fallback.
-    return null;
+    notFound();
+    return null; // notFound() throws an error, but return null for type safety.
   }
 
   const isOrganizer = user?.uid === activity.organizerId;
@@ -246,5 +239,3 @@ function RespondToActivity({ activity, user, userProfile }: { activity: Activity
         </Card>
     );
 }
-
-    
