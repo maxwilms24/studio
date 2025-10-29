@@ -90,7 +90,8 @@ export function ActivityCard({ activity }: ActivityCardProps) {
     }
   }
 
-  if (!activity.id) {
+  // Fallback in case ID is missing
+  if (!activity || !activity.id) {
     return null;
   }
 
