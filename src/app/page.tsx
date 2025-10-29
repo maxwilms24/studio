@@ -14,8 +14,8 @@ export default function HomePage() {
   const firestore = useFirestore();
   const { user } = useUser();
   
-  const activitiesRef = useMemoFirebase(() => collection(firestore, 'activities'), [firestore]);
-  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesRef);
+  const activitiesQuery = useMemoFirebase(() => query(collection(firestore, 'activities'), where('status', '==', 'Open')), [firestore]);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
 
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
   const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userProfileRef);

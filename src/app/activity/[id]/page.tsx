@@ -152,7 +152,7 @@ export default function ActivityDetailPage() {
           </Card>
           
           {isOrganizer && activity.status === 'Open' && <ManageParticipants activity={activity} pendingResponses={pendingResponses} />}
-          {(activity.status === 'Full' || activity.status === 'Closed') && isParticipant && user && currentUserProfile && <GroupChat activity={activity} currentUser={user} currentUserProfile={currentUserProfile} />}
+          {(activity.status === 'Full' || activity.status === 'Closed' || isParticipant) && user && currentUserProfile && <GroupChat activity={activity} currentUser={user} currentUserProfile={currentUserProfile} />}
           {!isOrganizer && !isParticipant && activity.status === 'Open' && !hasPendingResponse && user && currentUserProfile && <RespondToActivity activity={activity} user={user} userProfile={currentUserProfile} />}
           {!isOrganizer && hasPendingResponse && (
             <Card className="text-center">
@@ -237,5 +237,3 @@ function RespondToActivity({ activity, user, userProfile }: { activity: Activity
         </Card>
     );
 }
-
-    
