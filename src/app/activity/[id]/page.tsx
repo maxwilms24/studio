@@ -32,7 +32,7 @@ export default function ActivityDetailPage() {
     if (!activityId) return null;
     return doc(firestore, 'activities', activityId);
   }, [firestore, activityId]);
-  const { data: activity, isLoading: isLoadingActivity } = useDoc<Activity>(activityRef);
+  const { data: activity, isLoading: isLoadingActivity, error } = useDoc<Activity>(activityRef);
 
   const responsesRef = useMemoFirebase(() => {
     if (!activityId) return null;
@@ -72,9 +72,16 @@ export default function ActivityDetailPage() {
   }, [activity, responses]);
 
 
-  const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile) || !activityId;
+  const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile);
 
   const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
+
+  // Handle not found after loading is complete
+  React.useEffect(() => {
+    if (!isLoading && !activity) {
+      notFound();
+    }
+  }, [isLoading, activity]);
 
 
   if (isLoading) {
@@ -82,7 +89,8 @@ export default function ActivityDetailPage() {
   }
 
   if (!activity) {
-    notFound();
+    // This will be caught by the useEffect above, but as a fallback.
+    return null;
   }
 
   const isOrganizer = user?.uid === activity.organizerId;
@@ -238,3 +246,5 @@ function RespondToActivity({ activity, user, userProfile }: { activity: Activity
         </Card>
     );
 }
+
+    
