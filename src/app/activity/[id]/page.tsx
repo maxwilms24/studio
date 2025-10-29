@@ -28,10 +28,16 @@ export default function ActivityDetailPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
-  const activityRef = useMemoFirebase(() => doc(firestore, 'activities', activityId), [firestore, activityId]);
+  const activityRef = useMemoFirebase(() => {
+    if (!activityId) return null;
+    return doc(firestore, 'activities', activityId);
+  }, [firestore, activityId]);
   const { data: activity, isLoading: isLoadingActivity } = useDoc<Activity>(activityRef);
 
-  const responsesRef = useMemoFirebase(() => collection(firestore, 'activities', activityId, 'responses'), [firestore, activityId]);
+  const responsesRef = useMemoFirebase(() => {
+    if (!activityId) return null;
+    return collection(firestore, 'activities', activityId, 'responses');
+  }, [firestore, activityId]);
   const { data: responses, isLoading: isLoadingResponses } = useCollection<ActivityResponse>(responsesRef);
 
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
@@ -66,7 +72,7 @@ export default function ActivityDetailPage() {
   }, [activity, responses]);
 
 
-  const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile);
+  const isLoading = isLoadingActivity || isLoadingResponses || isUserLoading || (user && isLoadingProfile) || !activityId;
 
   const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
 
