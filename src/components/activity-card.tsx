@@ -90,23 +90,21 @@ export function ActivityCard({ activity }: ActivityCardProps) {
 
   return (
     <Card className="relative flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
+        <Link href={`/activity/${activity.id}`} className="absolute inset-0 z-0" aria-label={`Bekijk details voor ${activity.sport} op ${activity.location}`}/>
         <CardHeader>
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <SportIcon sport={activity.sport} className="h-8 w-8 text-primary" />
                 <div>
                 <CardTitle className="text-xl font-headline">
-                    <Link href={`/activity/${activity.id}`} className="stretched-link">
-                        <span className="absolute inset-0" />
-                        {activity.sport}
-                    </Link>
+                    <span className="relative z-10">{activity.sport}</span>
                 </CardTitle>
                 <CardDescription className="flex items-center gap-1.5 pt-1">
                     <MapPin className="h-3.5 w-3.5" /> {activity.location}
                 </CardDescription>
                 </div>
             </div>
-            <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize border border-border">
+            <Badge variant={getStatusBadgeVariant(activity.status)} className="capitalize border border-border relative z-10">
                 {activity.status}
             </Badge>
             </div>
@@ -152,4 +150,3 @@ export function ActivityCard({ activity }: ActivityCardProps) {
     </Card>
   );
 }
-
