@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Check, X, User as UserIcon } from 'lucide-react';
-import type { Activity, ActivityResponse } from '@/lib/types';
+import type { Activity, ActivityResponse, Participant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
-import { doc, arrayUnion } from 'firebase/firestore';
+import { useFirestore, updateDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, arrayUnion, collection, query, where } from 'firebase/firestore';
+import React from 'react';
 
 interface ManageParticipantsProps {
     activity: Activity;
@@ -16,6 +17,36 @@ interface ManageParticipantsProps {
 export function ManageParticipants({ activity, pendingResponses }: ManageParticipantsProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
+
+    const responsesRef = useMemoFirebase(() => collection(firestore, 'activities', activity.id, 'responses'), [firestore, activity.id]);
+    const { data: responses } = useCollection<ActivityResponse>(responsesRef);
+
+    const participants = React.useMemo(() => {
+        if (!activity || !responses) return [];
+    
+        const participantList: Participant[] = (responses.filter(r => r.status === 'accepted') || []).map(r => ({
+          id: r.respondentId,
+          name: r.respondentName,
+          profilePhotoUrl: r.respondentPhotoUrl,
+          profilePhotoHint: r.respondentPhotoHint,
+          participantCount: r.numberOfParticipants,
+          isOrganizer: r.respondentId === activity.organizerId
+        }));
+    
+        if (!participantList.some(p => p.id === activity.organizerId)) {
+          participantList.unshift({
+            id: activity.organizerId,
+            name: activity.organizerName,
+            profilePhotoUrl: activity.organizerPhotoUrl,
+            profilePhotoHint: activity.organizerPhotoHint,
+            participantCount: 1,
+            isOrganizer: true,
+          });
+        }
+        
+        return participantList;
+      }, [activity, responses]);
+    
     
     const handleDecision = (response: ActivityResponse, decision: 'accepted' | 'rejected') => {
         const responseRef = doc(firestore, 'activities', activity.id, 'responses', response.id);
@@ -26,6 +57,18 @@ export function ManageParticipants({ activity, pendingResponses }: ManagePartici
             updateDocumentNonBlocking(activityRef, {
                 participantIds: arrayUnion(response.respondentId)
             });
+
+            // Check if the activity is now full
+            const currentPlayers = participants.reduce((acc, p) => acc + p.participantCount, 0);
+            const newTotalPlayers = currentPlayers + response.numberOfParticipants;
+
+            if (newTotalPlayers >= activity.totalPlayers) {
+                updateDocumentNonBlocking(activityRef, { status: 'Closed' });
+                toast({
+                    title: "Activiteit is vol!",
+                    description: "De groepschat is nu geactiveerd voor alle deelnemers."
+                });
+            }
         }
 
         toast({

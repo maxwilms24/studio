@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { GroupChat } from '@/components/group-chat';
 import { SportIcon } from '@/components/icons/sport-icons';
@@ -37,7 +37,6 @@ export default function ActivityDetailPage() {
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
   const { data: currentUserProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userProfileRef);
 
-  const acceptedResponses = React.useMemo(() => responses?.filter(r => r.status === 'accepted') || [], [responses]);
   const pendingResponses = React.useMemo(() => responses?.filter(r => r.status === 'pending') || [], [responses]);
 
   const participants = React.useMemo(() => {
@@ -71,12 +70,6 @@ export default function ActivityDetailPage() {
 
   const playersJoined = React.useMemo(() => participants.reduce((acc, p) => acc + p.participantCount, 0), [participants]);
 
-  useEffect(() => {
-    if (activity && activity.status === 'Open' && playersJoined >= activity.totalPlayers) {
-      updateDocumentNonBlocking(activityRef, { status: 'Full' });
-    }
-  }, [activity, playersJoined, activityRef]);
-
 
   if (isLoading) {
     return <AppLayout><p>Laden...</p></AppLayout>;
@@ -97,6 +90,8 @@ export default function ActivityDetailPage() {
       case 'Open':
         return 'secondary';
       case 'Full':
+        return 'default';
+      case 'Closed':
         return 'default';
       case 'Cancelled':
         return 'destructive';
