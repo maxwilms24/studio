@@ -16,13 +16,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Header } from '@/components/header';
 import { Logo } from '@/components/icons/logo';
-import { Home, PlusCircle, User, List } from 'lucide-react';
+import { Home, PlusCircle, User, List, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
     { href: '/', label: 'Ontdek', icon: Home },
     { href: '/my-activities', label: 'Activiteiten', icon: List },
     { href: '/create-activity', label: 'Aanmaken', icon: PlusCircle },
+    { href: '/chats', label: 'Chats', icon: MessageSquare },
     { href: '/profile', label: 'Profiel', icon: User },
 ]
 
@@ -44,7 +45,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                  <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === item.href}
+                      isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
                       tooltip={{ children: item.label }}
                     >
                       <Link href={item.href}>
@@ -80,7 +81,7 @@ function BottomNavBar() {
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} className={cn(
                 "flex flex-col items-center justify-center w-full h-full text-sm font-medium transition-colors",
-                pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-primary"
+                (pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')) ? "text-primary" : "text-muted-foreground hover:text-primary"
             )}>
               <item.icon className="h-6 w-6 mb-1" />
               <span className="text-xs">{item.label}</span>

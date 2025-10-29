@@ -14,6 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, Users, Plus, Minus, User as UserIcon } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { ClientTime } from '@/components/client-time';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
@@ -177,7 +178,7 @@ export default function ActivityDetailPage() {
               <ul className="space-y-4">
                 {participants.map(p => (
                     <li key={p.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <Link href={`/profile/${p.id}`} className="flex items-center gap-3 group">
                             <Avatar className="h-10 w-10">
                                 <AvatarImage src={p.profilePhotoUrl} alt={p.name} data-ai-hint={p.profilePhotoHint} />
                                 <AvatarFallback>
@@ -185,10 +186,10 @@ export default function ActivityDetailPage() {
                                 </AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="font-semibold">{p.name}</p>
+                                <p className="font-semibold group-hover:underline">{p.name}</p>
                                 {p.isOrganizer && <Badge variant="outline">Organisator</Badge>}
                             </div>
-                        </div>
+                        </Link>
                         {p.participantCount > 1 && <Badge variant="secondary">+{p.participantCount - 1}</Badge>}
                     </li>
                 ))}
