@@ -9,10 +9,18 @@ import type { Activity, UserProfile } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
   
   const activitiesQuery = useMemoFirebase(() => query(collection(firestore, 'activities'), where('status', '==', 'Open')), [firestore]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
@@ -33,6 +41,14 @@ export default function HomePage() {
   }, [activities, filters]);
   
   const isLoading = isLoadingActivities || (user && isLoadingProfile);
+
+  if (isUserLoading || !user) {
+    return (
+        <div className="flex justify-center items-center h-screen">
+          <p>Laden...</p>
+        </div>
+    )
+  }
 
   return (
     <AppLayout>

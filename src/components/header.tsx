@@ -18,11 +18,13 @@ import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
+  const pathname = usePathname();
 
   const userProfileRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -36,6 +38,7 @@ export function Header() {
   };
 
   const isLoading = isUserLoading || (user && isProfileLoading);
+  const showLogin = !isUserLoading && !user && !pathname.startsWith('/login') && !pathname.startsWith('/signup');
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
@@ -92,7 +95,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-         {!isLoading && !user && (
+         {showLogin && (
             <Button asChild>
                 <Link href="/login">Inloggen</Link>
             </Button>

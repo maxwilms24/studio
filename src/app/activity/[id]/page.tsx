@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppLayout } from '@/components/app-layout';
 import { GroupChat } from '@/components/group-chat';
 import { SportIcon } from '@/components/icons/sport-icons';
@@ -28,6 +28,12 @@ export default function ActivityDetailPage() {
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   const activityRef = useMemoFirebase(() => {
     if (!activityId) return null;
@@ -81,7 +87,7 @@ export default function ActivityDetailPage() {
     return null; 
   }
   
-  if (isLoading || !activity) {
+  if (isLoading || !activity || (user && !currentUserProfile)) {
     return <AppLayout><div className="flex justify-center items-center h-64"><p>Laden...</p></div></AppLayout>;
   }
   
