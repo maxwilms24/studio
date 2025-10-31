@@ -24,8 +24,8 @@
  *
  * Denormalization for Authorization:
  * - The `Activity` document includes the `organizerId` to easily check activity ownership.
- * - The `Activity` document includes the `acceptedParticipantIds` to authorize access to the chat messages.
- * - The `ChatMessage` includes the `activityId`, `senderId` and `acceptedParticipantIds` to authorize reading.
+ * - The `Activity` document includes the `participantIds` to authorize access to the chat messages.
+ * - The `ChatMessage` includes the `activityId`, `senderId` and `participantIds` to authorize reading.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -115,7 +115,7 @@ service cloud.firestore {
      * @path /activities/{activityId}/messages/{messageId}
      * @allow (get, list) - Accepted participant 'user_abc' can view chat messages.
      *   - request.auth.uid: 'user_abc'
-     *   - Activity.acceptedParticipantIds contains 'user_abc'
+     *   - Activity.participantIds contains 'user_abc'
      * @allow (create) - Accepted participant 'user_abc' can create chat messages.
      *   - request.auth.uid: 'user_abc'
      *   - request.resource.data.senderId: 'user_abc'
@@ -124,7 +124,7 @@ service cloud.firestore {
      *   - resource.data.senderId: 'user_abc'
      * @deny (get, list) - Non-participant 'user_def' cannot view chat messages.
      *   - request.auth.uid: 'user_def'
-     *   - Activity.acceptedParticipantIds does not contain 'user_def'
+     *   - Activity.participantIds does not contain 'user_def'
      * @deny (create) - Non-participant 'user_def' cannot create chat messages.
      *   - request.auth.uid: 'user_def'
      *   - request.resource.data.senderId: 'user_def'
@@ -168,7 +168,7 @@ service cloud.firestore {
     }
 
     function isAcceptedParticipant(activityId, userId) {
-      return userId in get(/databases/$(database)/documents/activities/$(activityId)).data.acceptedParticipantIds;
+      return userId in get(/databases/$(database)/documents/activities/$(activityId)).data.participantIds;
     }
 
      function isOwnerOfChatMessage(activityId, messageId, userId) {
