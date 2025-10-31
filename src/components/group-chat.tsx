@@ -9,12 +9,12 @@ import { Send, User as UserIcon } from 'lucide-react';
 import type { Activity, ChatMessage, UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, serverTimestamp, orderBy, query } from 'firebase/firestore';
 
 interface GroupChatProps {
     activity: Activity;
-    currentUser: any;
+    currentUser: { uid: string };
     currentUserProfile: UserProfile;
 }
 
